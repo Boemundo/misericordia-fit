@@ -1,9 +1,9 @@
 const CACHE_NAME = 'misericordia-fit-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/image_9a755a.png',
-  '/manifest.json'
+  './',
+  './index.html',
+  './image_9a755a.png',
+  './manifest.json'
 ];
 
 self.addEventListener('install', event => {
