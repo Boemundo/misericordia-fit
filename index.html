@@ -95,7 +95,7 @@
             <!-- Peso -->
             <div>
                 <label class="block text-sm font-medium text-slate-300 mb-1">Peso (kg)</label>
-                <input type="number" id="weight" value="97" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                <input type="number" id="weight" placeholder="Ex: 75" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
             </div>
 
             <!-- Campos Mifflin (Altura, Idade, Gênero) -->
@@ -103,11 +103,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-1">Altura (cm)</label>
-                        <input type="number" id="height" value="169" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                        <input type="number" id="height" placeholder="Ex: 175" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-1">Idade</label>
-                        <input type="number" id="age" value="21" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                        <input type="number" id="age" placeholder="Ex: 25" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
                     </div>
                 </div>
                 <div>
@@ -122,7 +122,7 @@
             <!-- Campo Katch (BF%) -->
             <div id="katch-fields" class="block">
                 <label class="block text-sm font-medium text-slate-300 mb-1">Percentual de Gordura (%)</label>
-                <input type="number" id="bf" value="29" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                <input type="number" id="bf" placeholder="Ex: 15" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
             </div>
 
             <!-- Nível de Atividade (Apenas TDEE) -->
@@ -209,15 +209,20 @@
                 const age = parseFloat(document.getElementById('age').value) || 0;
                 const gender = document.getElementById('gender').value;
 
-                if (gender === 'm') {
-                    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-                } else {
-                    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                if (weight > 0 && height > 0 && age > 0) {
+                    if (gender === 'm') {
+                        bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+                    } else {
+                        bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                    }
                 }
             } else {
-                const bf = parseFloat(document.getElementById('bf').value) || 0;
-                const leanMass = weight * (1 - (bf / 100));
-                bmr = 370 + (21.6 * leanMass);
+                const bfInput = document.getElementById('bf').value;
+                const bf = parseFloat(bfInput) || 0;
+                if (weight > 0 && bfInput !== '') {
+                    const leanMass = weight * (1 - (bf / 100));
+                    bmr = 370 + (21.6 * leanMass);
+                }
             }
 
             let finalValue = bmr;
