@@ -22,22 +22,24 @@
     <style>
         .tooltip .tooltip-text {
             visibility: hidden;
-            width: 250px;
+            width: 260px;
+            max-width: 80vw;
             background-color: #1e293b;
             color: #fff;
             text-align: left;
-            border-radius: 6px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 12px;
             position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -125px;
+            z-index: 20;
+            bottom: 135%;
+            right: 0;
             opacity: 0;
             transition: opacity 0.3s;
             font-size: 0.875rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
             border: 1px solid #334155;
+            pointer-events: none;
         }
         .tooltip:hover .tooltip-text {
             visibility: visible;
@@ -56,10 +58,10 @@
     </style>
 </head>
 <body class="bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans">
-    <div class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-slate-700">
+    <div class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl border border-slate-700">
         
         <!-- Cabeçalho -->
-        <div class="bg-slate-900 p-6 text-center border-b border-slate-700">
+        <div class="bg-slate-900 p-6 text-center border-b border-slate-700 rounded-t-xl">
             <img src="image_9a755a.png" alt="Misericordia Fit Logo" class="w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_15px_rgba(14,165,233,0.3)]">
             <h1 class="text-2xl font-bold text-sky-400">Misericordia Fit Calculator</h1>
         </div>
