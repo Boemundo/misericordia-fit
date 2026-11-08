@@ -8,7 +8,7 @@
     
     <!-- Configurações do PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#0f172a" id="meta-theme-color">
     
     <script>
         // Registro do Service Worker para funcionamento offline
@@ -22,7 +22,7 @@
     <style>
         .tooltip .tooltip-text {
             visibility: hidden;
-            width: 260px;
+            width: 270px;
             max-width: 80vw;
             background-color: #1e293b;
             color: #fff;
@@ -34,20 +34,29 @@
             bottom: 135%;
             right: 0;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s, background-color 0.3s, border-color 0.3s;
             font-size: 0.875rem;
-            line-height: 1.4;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            line-height: 1.45;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
             border: 1px solid #334155;
             pointer-events: none;
         }
-        .tooltip:hover .tooltip-text {
+        body.theme-stone .tooltip .tooltip-text {
+            background-color: #27272a;
+            border-color: #52525b;
+        }
+        .tooltip:hover .tooltip-text,
+        .tooltip:focus-within .tooltip-text {
             visibility: visible;
             opacity: 1;
         }
-        .tab-active {
+        .tab-active-blue {
             border-bottom: 2px solid #0ea5e9;
             color: #0ea5e9;
+        }
+        .tab-active-stone {
+            border-bottom: 2px solid #d4d4d8;
+            color: #f4f4f5;
         }
         .tab-inactive {
             color: #94a3b8;
@@ -55,49 +64,87 @@
         .tab-inactive:hover {
             color: #e2e8f0;
         }
+        body.theme-stone .tab-inactive {
+            color: #a1a1aa;
+        }
+        body.theme-stone .tab-inactive:hover {
+            color: #e4e4e7;
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans">
-    <div class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl border border-slate-700">
+<body id="app-body" class="bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300">
+    <div id="app-card" class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl border border-slate-700 transition-colors duration-300">
         
         <!-- Cabeçalho -->
-        <div class="bg-slate-900 p-6 text-center border-b border-slate-700 rounded-t-xl">
-            <img src="image_9a755a.png" alt="Misericordia Fit Logo" class="w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_15px_rgba(14,165,233,0.3)]">
-            <h1 class="text-2xl font-bold text-sky-400">Misericordia Fit Calculator</h1>
+        <div id="app-header" class="bg-slate-900 p-6 text-center border-b border-slate-700 rounded-t-xl transition-colors duration-300">
+            <img id="app-logo" src="image_9a755a.png" alt="Misericordia Fit Logo" class="w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all duration-300">
+            <h1 id="app-title" class="text-2xl font-bold text-sky-400 transition-colors duration-300">Misericordia Fit Calculator</h1>
         </div>
 
         <!-- Abas -->
-        <div class="flex border-b border-slate-700">
-            <button id="tab-tmb" class="flex-1 py-3 text-center font-medium tab-active transition-colors" onclick="switchTab('tmb')">
+        <div id="tabs-container" class="flex border-b border-slate-700 text-sm md:text-base transition-colors duration-300">
+            <button id="tab-tmb" class="flex-1 py-3 text-center font-medium tab-active-blue transition-colors" onclick="switchTab('tmb')">
                 TMB (Basal)
             </button>
             <button id="tab-tdee" class="flex-1 py-3 text-center font-medium tab-inactive transition-colors" onclick="switchTab('tdee')">
                 TDEE (Total)
             </button>
+            <button id="tab-stones" class="flex-1 py-3 text-center font-medium tab-inactive transition-colors" onclick="switchTab('stones')">
+                Pedras (st)
+            </button>
         </div>
 
         <div class="p-6 space-y-5">
-            <!-- Método e Tooltip -->
-            <div class="flex items-center justify-between">
-                <label class="block text-sm font-medium text-slate-300">Método de Cálculo</label>
-                <div class="tooltip relative cursor-help inline-block">
-                    <div class="bg-slate-700 text-slate-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
-                        ?
-                    </div>
-                    <div class="tooltip-text" id="method-tooltip">
-                        <strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.
+            <!-- Cabeçalho da Aba Pedras (st) + História -->
+            <div id="stones-header-section" class="hidden space-y-2">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-zinc-200">Quantas pedras (st) você pesa?</h2>
+                    <div class="tooltip relative cursor-help inline-block" tabindex="0">
+                        <div class="bg-zinc-700 text-zinc-200 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-zinc-500 hover:text-white transition-colors">
+                            ?
+                        </div>
+                        <div class="tooltip-text">
+                            <strong class="text-zinc-200">História do Stone (st):</strong> Usada desde a Antiguidade nas Ilhas Britânicas, quando comerciantes usavam pedras reais para pesar mercadorias nos mercados. Em 1350, o rei Eduardo III da Inglaterra padronizou 1 <em>stone</em> como exatamente <strong>14 libras</strong> (<strong>6,35029 kg</strong>). Até hoje é a unidade tradicional para peso corporal no Reino Unido e na Irlanda.
+                        </div>
                     </div>
                 </div>
+                <p class="text-xs text-zinc-400">1 stone (st) = 6,35 kg (14 lb). Alterne entre <strong>kg</strong> e <strong>st</strong> abaixo para converter nos dois sentidos.</p>
             </div>
-            <select id="method" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-all" onchange="updateFormAndCalculate()">
-                <option value="katch">Katch-McArdle (Preciso / Requer BF%)</option>
-                <option value="mifflin">Mifflin-St Jeor (Padrão)</option>
-            </select>
 
-            <!-- Peso -->
+            <!-- Método e Tooltip (Apenas TMB e TDEE) -->
+            <div id="method-section" class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="block text-sm font-medium text-slate-300">Método de Cálculo</label>
+                    <div class="tooltip relative cursor-help inline-block" tabindex="0">
+                        <div id="method-help-badge" class="bg-slate-700 text-slate-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
+                            ?
+                        </div>
+                        <div class="tooltip-text" id="method-tooltip">
+                            <strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.
+                        </div>
+                    </div>
+                </div>
+                <select id="method" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-all" onchange="updateFormAndCalculate()">
+                    <option value="katch">Katch-McArdle (Preciso / Requer BF%)</option>
+                    <option value="mifflin">Mifflin-St Jeor (Padrão)</option>
+                </select>
+            </div>
+
+            <!-- Peso com seletor kg / stones (st) -->
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Peso (kg)</label>
-                <input type="number" id="weight" placeholder="Ex: 75" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                <div class="flex items-center justify-between mb-1.5">
+                    <label id="weight-label" class="block text-sm font-medium text-slate-300">Peso (kg)</label>
+                    <div id="unit-toggle-group" class="inline-flex rounded-lg p-0.5 bg-slate-900 border border-slate-700 text-xs">
+                        <button type="button" id="unit-btn-kg" onclick="setWeightUnit('kg')" class="px-2.5 py-1 rounded-md font-semibold bg-sky-500 text-white transition-colors">
+                            kg
+                        </button>
+                        <button type="button" id="unit-btn-st" onclick="setWeightUnit('st')" class="px-2.5 py-1 rounded-md font-semibold text-slate-400 hover:text-slate-200 transition-colors">
+                            st (pedras)
+                        </button>
+                    </div>
+                </div>
+                <input type="number" step="any" id="weight" placeholder="Ex: 75" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-colors" oninput="onWeightInput()">
+                <p id="weight-conversion-hint" class="text-xs text-slate-400 mt-1.5 hidden"></p>
             </div>
 
             <!-- Campos Mifflin (Altura, Idade, Gênero) -->
@@ -105,16 +152,16 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-1">Altura (cm)</label>
-                        <input type="number" id="height" placeholder="Ex: 175" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                        <input type="number" id="height" placeholder="Ex: 175" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="saveStateAndCalculate()">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-300 mb-1">Idade</label>
-                        <input type="number" id="age" placeholder="Ex: 25" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                        <input type="number" id="age" placeholder="Ex: 25" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="saveStateAndCalculate()">
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-1">Gênero</label>
-                    <select id="gender" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="calculate()">
+                    <select id="gender" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="saveStateAndCalculate()">
                         <option value="m">Masculino</option>
                         <option value="f">Feminino</option>
                     </select>
@@ -124,13 +171,13 @@
             <!-- Campo Katch (BF%) -->
             <div id="katch-fields" class="block">
                 <label class="block text-sm font-medium text-slate-300 mb-1">Percentual de Gordura (%)</label>
-                <input type="number" id="bf" placeholder="Ex: 15" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                <input type="number" step="any" id="bf" placeholder="Ex: 15" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="saveStateAndCalculate()">
             </div>
 
             <!-- Nível de Atividade (Apenas TDEE) -->
             <div id="activity-section" class="hidden">
                 <label class="block text-sm font-medium text-slate-300 mb-1">Nível de Atividade</label>
-                <select id="activity" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="calculate()">
+                <select id="activity" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="saveStateAndCalculate()">
                     <option value="1.2">Sedentário (Trabalho de escritório)</option>
                     <option value="1.375">Levemente Ativo (Exercício 1-3 dias/sem)</option>
                     <option value="1.55" selected>Moderadamente Ativo (Exercício 3-5 dias/sem)</option>
@@ -140,11 +187,11 @@
             </div>
 
             <!-- Resultado Prominente -->
-            <div class="mt-8 p-6 bg-slate-900 rounded-xl border border-sky-900/50 shadow-inner text-center">
+            <div id="result-box" class="mt-8 p-6 bg-slate-900 rounded-xl border border-sky-900/50 shadow-inner text-center transition-colors duration-300">
                 <h2 id="result-label" class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Taxa Metabólica Basal</h2>
                 <div class="flex justify-center items-end space-x-2">
-                    <span id="main-result" class="text-5xl font-extrabold text-sky-400">0</span>
-                    <span class="text-xl text-slate-500 pb-1">kcal</span>
+                    <span id="main-result" class="text-5xl font-extrabold text-sky-400 transition-colors duration-300">0</span>
+                    <span id="result-unit" class="text-xl text-slate-500 pb-1">kcal</span>
                 </div>
                 <p id="result-desc" class="text-xs text-slate-500 mt-3">Energia necessária apenas para manter as funções vitais em repouso absoluto.</p>
             </div>
@@ -152,39 +199,241 @@
     </div>
 
     <script>
+        const KG_PER_STONE = 6.35029318;
+        const STORAGE_KEY = 'misericordia_fit_cache_v1';
+
         let currentTab = 'tmb';
+        let weightUnit = 'kg'; // 'kg' ou 'st'
+        let storedWeightKg = null; // valor canônico em kg para manter precisão entre conversões
 
         const tooltips = {
             katch: '<strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.',
             mifflin: '<strong class="text-sky-400">Mifflin-St Jeor:</strong> O padrão ouro moderno para o público geral. Usa o peso total e ignora a composição corporal. Tende a superestimar para quem tem muita massa muscular.'
         };
 
-        function switchTab(tab) {
-            currentTab = tab;
-            
-            // UI Styling
-            document.getElementById('tab-tmb').className = tab === 'tmb' ? 'flex-1 py-3 text-center font-medium tab-active transition-colors' : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
-            document.getElementById('tab-tdee').className = tab === 'tdee' ? 'flex-1 py-3 text-center font-medium tab-active transition-colors' : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
-            
-            // Show/Hide Activity
-            document.getElementById('activity-section').style.display = tab === 'tdee' ? 'block' : 'none';
-            
-            // Update Result Labels
-            document.getElementById('result-label').textContent = tab === 'tmb' ? 'Taxa Metabólica Basal' : 'Gasto Calórico Total (TDEE)';
-            document.getElementById('result-desc').textContent = tab === 'tmb' 
-                ? 'Energia necessária apenas para manter as funções vitais em repouso absoluto.'
-                : 'Estimativa de energia gasta no dia inteiro, incluindo seu treino e rotina.';
-            
+        function formatNumber(num, decimals = 2) {
+            if (num === null || isNaN(num) || num <= 0) return '';
+            const rounded = Number(num.toFixed(decimals));
+            return String(rounded);
+        }
+
+        function saveToCache() {
+            try {
+                const payload = {
+                    weightKg: storedWeightKg,
+                    weightUnit: weightUnit,
+                    method: document.getElementById('method').value,
+                    bf: document.getElementById('bf').value,
+                    height: document.getElementById('height').value,
+                    age: document.getElementById('age').value,
+                    gender: document.getElementById('gender').value,
+                    activity: document.getElementById('activity').value
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            } catch (e) {
+                console.warn('Não foi possível salvar no cache local:', e);
+            }
+        }
+
+        function loadFromCache() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+
+                if (data.method === 'katch' || data.method === 'mifflin') {
+                    document.getElementById('method').value = data.method;
+                }
+                if (typeof data.bf === 'string') {
+                    document.getElementById('bf').value = data.bf;
+                }
+                if (typeof data.height === 'string') {
+                    document.getElementById('height').value = data.height;
+                }
+                if (typeof data.age === 'string') {
+                    document.getElementById('age').value = data.age;
+                }
+                if (data.gender === 'm' || data.gender === 'f') {
+                    document.getElementById('gender').value = data.gender;
+                }
+                if (data.activity) {
+                    document.getElementById('activity').value = data.activity;
+                }
+                if (data.weightUnit === 'kg' || data.weightUnit === 'st') {
+                    weightUnit = data.weightUnit;
+                }
+                if (typeof data.weightKg === 'number' && data.weightKg > 0) {
+                    storedWeightKg = data.weightKg;
+                    const displayVal = weightUnit === 'kg'
+                        ? formatNumber(storedWeightKg, 1)
+                        : formatNumber(storedWeightKg / KG_PER_STONE, 2);
+                    document.getElementById('weight').value = displayVal;
+                }
+            } catch (e) {
+                console.warn('Erro ao carregar cache local:', e);
+            }
+        }
+
+        function setWeightUnit(unit) {
+            if (unit !== 'kg' && unit !== 'st') return;
+            weightUnit = unit;
+
+            const weightInput = document.getElementById('weight');
+            if (storedWeightKg !== null && storedWeightKg > 0) {
+                weightInput.value = unit === 'kg'
+                    ? formatNumber(storedWeightKg, 1)
+                    : formatNumber(storedWeightKg / KG_PER_STONE, 2);
+            }
+
+            updateWeightUnitUI();
+            saveToCache();
             calculate();
         }
 
-        function updateFormAndCalculate() {
+        function updateWeightUnitUI() {
+            const isStoneTheme = currentTab === 'stones';
+            const weightLabel = document.getElementById('weight-label');
+            const weightInput = document.getElementById('weight');
+            const btnKg = document.getElementById('unit-btn-kg');
+            const btnSt = document.getElementById('unit-btn-st');
+
+            weightLabel.textContent = weightUnit === 'kg' ? 'Peso (kg)' : 'Peso em Pedras (st)';
+            weightInput.placeholder = weightUnit === 'kg' ? 'Ex: 75' : 'Ex: 11.8';
+
+            const activeClass = isStoneTheme
+                ? 'px-2.5 py-1 rounded-md font-semibold bg-zinc-600 text-zinc-100 transition-colors'
+                : 'px-2.5 py-1 rounded-md font-semibold bg-sky-500 text-white transition-colors';
+            const inactiveClass = isStoneTheme
+                ? 'px-2.5 py-1 rounded-md font-semibold text-zinc-400 hover:text-zinc-200 transition-colors'
+                : 'px-2.5 py-1 rounded-md font-semibold text-slate-400 hover:text-slate-200 transition-colors';
+
+            btnKg.className = weightUnit === 'kg' ? activeClass : inactiveClass;
+            btnSt.className = weightUnit === 'st' ? activeClass : inactiveClass;
+        }
+
+        function onWeightInput() {
+            const rawVal = parseFloat(document.getElementById('weight').value);
+            if (!isNaN(rawVal) && rawVal > 0) {
+                storedWeightKg = weightUnit === 'kg' ? rawVal : rawVal * KG_PER_STONE;
+            } else {
+                storedWeightKg = null;
+            }
+            saveToCache();
+            calculate();
+        }
+
+        function saveStateAndCalculate() {
+            saveToCache();
+            calculate();
+        }
+
+        function applyTheme(isStone) {
+            const body = document.getElementById('app-body');
+            const card = document.getElementById('app-card');
+            const header = document.getElementById('app-header');
+            const logo = document.getElementById('app-logo');
+            const title = document.getElementById('app-title');
+            const tabsContainer = document.getElementById('tabs-container');
+            const unitToggleGroup = document.getElementById('unit-toggle-group');
+            const weightInput = document.getElementById('weight');
+            const weightLabel = document.getElementById('weight-label');
+            const resultBox = document.getElementById('result-box');
+            const mainResult = document.getElementById('main-result');
+            const resultLabel = document.getElementById('result-label');
+            const resultUnit = document.getElementById('result-unit');
+            const resultDesc = document.getElementById('result-desc');
+            const metaTheme = document.getElementById('meta-theme-color');
+
+            if (isStone) {
+                body.classList.add('theme-stone');
+                body.className = 'theme-stone bg-zinc-950 text-zinc-200 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300';
+                card.className = 'max-w-md mx-auto bg-zinc-900 rounded-xl shadow-2xl border border-zinc-700 transition-colors duration-300';
+                header.className = 'bg-zinc-950 p-6 text-center border-b border-zinc-800 rounded-t-xl transition-colors duration-300';
+                logo.className = 'w-24 h-24 mx-auto rounded-full object-cover border-2 border-zinc-400 mb-4 shadow-[0_0_15px_rgba(161,161,170,0.25)] grayscale transition-all duration-300';
+                title.className = 'text-2xl font-bold text-zinc-200 transition-colors duration-300';
+                tabsContainer.className = 'flex border-b border-zinc-800 text-sm md:text-base transition-colors duration-300';
+                unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-zinc-950 border border-zinc-700 text-xs';
+                weightInput.className = 'w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-zinc-400 focus:border-zinc-400 transition-colors';
+                weightLabel.className = 'block text-sm font-medium text-zinc-300';
+                resultBox.className = 'mt-8 p-6 bg-zinc-950 rounded-xl border border-zinc-700 shadow-inner text-center transition-colors duration-300';
+                mainResult.className = 'text-5xl font-extrabold text-zinc-200 transition-colors duration-300';
+                resultLabel.className = 'text-sm font-bold text-zinc-400 uppercase tracking-wider mb-2';
+                resultUnit.className = 'text-xl text-zinc-400 pb-1';
+                resultDesc.className = 'text-xs text-zinc-400 mt-3';
+                metaTheme.setAttribute('content', '#09090b');
+            } else {
+                body.classList.remove('theme-stone');
+                body.className = 'bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300';
+                card.className = 'max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl border border-slate-700 transition-colors duration-300';
+                header.className = 'bg-slate-900 p-6 text-center border-b border-slate-700 rounded-t-xl transition-colors duration-300';
+                logo.className = 'w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all duration-300';
+                title.className = 'text-2xl font-bold text-sky-400 transition-colors duration-300';
+                tabsContainer.className = 'flex border-b border-slate-700 text-sm md:text-base transition-colors duration-300';
+                unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-slate-900 border border-slate-700 text-xs';
+                weightInput.className = 'w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-colors';
+                weightLabel.className = 'block text-sm font-medium text-slate-300';
+                resultBox.className = 'mt-8 p-6 bg-slate-900 rounded-xl border border-sky-900/50 shadow-inner text-center transition-colors duration-300';
+                mainResult.className = 'text-5xl font-extrabold text-sky-400 transition-colors duration-300';
+                resultLabel.className = 'text-sm font-bold text-slate-400 uppercase tracking-wider mb-2';
+                resultUnit.className = 'text-xl text-slate-500 pb-1';
+                resultDesc.className = 'text-xs text-slate-500 mt-3';
+                metaTheme.setAttribute('content', '#0f172a');
+            }
+
+            updateWeightUnitUI();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const isStone = tab === 'stones';
+
+            applyTheme(isStone);
+
+            // Estilo das Abas
+            document.getElementById('tab-tmb').className = tab === 'tmb'
+                ? 'flex-1 py-3 text-center font-medium tab-active-blue transition-colors'
+                : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
+            document.getElementById('tab-tdee').className = tab === 'tdee'
+                ? 'flex-1 py-3 text-center font-medium tab-active-blue transition-colors'
+                : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
+            document.getElementById('tab-stones').className = tab === 'stones'
+                ? 'flex-1 py-3 text-center font-medium tab-active-stone transition-colors'
+                : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
+
+            // Mostrar / esconder seções conforme a aba
+            const stonesHeader = document.getElementById('stones-header-section');
+            const methodSection = document.getElementById('method-section');
+            const mifflinFields = document.getElementById('mifflin-fields');
+            const katchFields = document.getElementById('katch-fields');
+            const activitySection = document.getElementById('activity-section');
+
+            if (isStone) {
+                stonesHeader.classList.remove('hidden');
+                methodSection.classList.add('hidden');
+                mifflinFields.classList.add('hidden');
+                mifflinFields.classList.remove('block');
+                katchFields.classList.add('hidden');
+                katchFields.classList.remove('block');
+                activitySection.style.display = 'none';
+            } else {
+                stonesHeader.classList.add('hidden');
+                methodSection.classList.remove('hidden');
+                activitySection.style.display = tab === 'tdee' ? 'block' : 'none';
+                updateMethodFieldsVisibility();
+            }
+
+            calculate();
+        }
+
+        function updateMethodFieldsVisibility() {
             const method = document.getElementById('method').value;
             const mifflinFields = document.getElementById('mifflin-fields');
             const katchFields = document.getElementById('katch-fields');
             const tooltip = document.getElementById('method-tooltip');
 
             tooltip.innerHTML = tooltips[method];
+
+            if (currentTab === 'stones') return;
 
             if (method === 'mifflin') {
                 mifflinFields.classList.remove('hidden');
@@ -197,13 +446,74 @@
                 katchFields.classList.remove('hidden');
                 katchFields.classList.add('block');
             }
+        }
 
+        function updateFormAndCalculate() {
+            updateMethodFieldsVisibility();
+            saveToCache();
             calculate();
         }
 
         function calculate() {
+            const weightKg = storedWeightKg && storedWeightKg > 0 ? storedWeightKg : 0;
+            const hintEl = document.getElementById('weight-conversion-hint');
+
+            // Dica rápida de equivalência abaixo do campo de peso nas abas TMB/TDEE
+            if (currentTab !== 'stones' && weightKg > 0) {
+                hintEl.classList.remove('hidden');
+                if (weightUnit === 'kg') {
+                    hintEl.textContent = `Equivale a ${(weightKg / KG_PER_STONE).toFixed(2)} st (pedras)`;
+                } else {
+                    hintEl.textContent = `Equivale a ${weightKg.toFixed(1)} kg`;
+                }
+            } else {
+                hintEl.classList.add('hidden');
+            }
+
+            // Aba Pedras (st)
+            if (currentTab === 'stones') {
+                const resultLabel = document.getElementById('result-label');
+                const resultUnit = document.getElementById('result-unit');
+                const resultDesc = document.getElementById('result-desc');
+
+                if (weightUnit === 'kg') {
+                    // Entrada em kg -> resultado principal em stones (st)
+                    const stonesVal = weightKg > 0 ? weightKg / KG_PER_STONE : 0;
+                    const totalPounds = Math.round(stonesVal * 14);
+                    const wholeStones = Math.floor(totalPounds / 14);
+                    const remainingPounds = totalPounds % 14;
+
+                    resultLabel.textContent = 'Seu Peso em Pedras (Stones)';
+                    resultUnit.textContent = 'st';
+                    resultDesc.textContent = weightKg > 0
+                        ? `Formato britânico tradicional: ${wholeStones} st e ${remainingPounds} lb (${weightKg.toFixed(1)} kg).`
+                        : 'Digite seu peso acima para converter entre quilos (kg) e pedras (st).';
+
+                    animateValue('main-result', parseFloat(document.getElementById('main-result').innerText) || 0, stonesVal, 300, 2);
+                } else {
+                    // Entrada em st -> resultado principal em kg
+                    const stonesInputVal = weightKg > 0 ? weightKg / KG_PER_STONE : 0;
+                    resultLabel.textContent = 'Seu Peso em Quilogramas';
+                    resultUnit.textContent = 'kg';
+                    resultDesc.textContent = weightKg > 0
+                        ? `${stonesInputVal.toFixed(2)} st equivalem a ${weightKg.toFixed(2)} kg (${(stonesInputVal * 14).toFixed(1)} lb).`
+                        : 'Digite as pedras (st) acima para descobrir o equivalente em quilos (kg).';
+
+                    animateValue('main-result', parseFloat(document.getElementById('main-result').innerText) || 0, weightKg, 300, 1);
+                }
+                return;
+            }
+
+            // Abas TMB e TDEE
+            document.getElementById('result-unit').textContent = 'kcal';
+            document.getElementById('result-label').textContent = currentTab === 'tmb'
+                ? 'Taxa Metabólica Basal'
+                : 'Gasto Calórico Total (TDEE)';
+            document.getElementById('result-desc').textContent = currentTab === 'tmb'
+                ? 'Energia necessária apenas para manter as funções vitais em repouso absoluto.'
+                : 'Estimativa de energia gasta no dia inteiro, incluindo seu treino e rotina.';
+
             const method = document.getElementById('method').value;
-            const weight = parseFloat(document.getElementById('weight').value) || 0;
             let bmr = 0;
 
             if (method === 'mifflin') {
@@ -211,43 +521,51 @@
                 const age = parseFloat(document.getElementById('age').value) || 0;
                 const gender = document.getElementById('gender').value;
 
-                if (weight > 0 && height > 0 && age > 0) {
+                if (weightKg > 0 && height > 0 && age > 0) {
                     if (gender === 'm') {
-                        bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+                        bmr = (10 * weightKg) + (6.25 * height) - (5 * age) + 5;
                     } else {
-                        bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                        bmr = (10 * weightKg) + (6.25 * height) - (5 * age) - 161;
                     }
                 }
             } else {
                 const bfInput = document.getElementById('bf').value;
                 const bf = parseFloat(bfInput) || 0;
-                if (weight > 0 && bfInput !== '') {
-                    const leanMass = weight * (1 - (bf / 100));
+                if (weightKg > 0 && bfInput !== '') {
+                    const leanMass = weightKg * (1 - (bf / 100));
                     bmr = 370 + (21.6 * leanMass);
                 }
             }
 
             let finalValue = bmr;
-            
             if (currentTab === 'tdee') {
                 const activityMultiplier = parseFloat(document.getElementById('activity').value);
                 finalValue = bmr * activityMultiplier;
             }
 
-            // Simple count up animation
-            animateValue("main-result", parseFloat(document.getElementById('main-result').innerText) || 0, Math.round(finalValue), 300);
+            animateValue('main-result', parseFloat(document.getElementById('main-result').innerText) || 0, Math.round(finalValue), 300, 0);
         }
 
-        function animateValue(id, start, end, duration) {
+        function animateValue(id, start, end, duration, decimals = 0) {
             const obj = document.getElementById(id);
-            if (start === end) return;
+            if (Math.abs(start - end) < 0.005) {
+                obj.innerHTML = decimals > 0 && end > 0 ? Number(end.toFixed(decimals)) : Math.round(end);
+                return;
+            }
             let startTimestamp = null;
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                const current = progress * (end - start) + start;
+                if (decimals > 0) {
+                    obj.innerHTML = current > 0 ? Number(current.toFixed(decimals)) : 0;
+                } else {
+                    obj.innerHTML = Math.floor(current);
+                }
                 if (progress < 1) {
                     window.requestAnimationFrame(step);
+                } else {
+                    obj.innerHTML = decimals > 0 && end > 0 ? Number(end.toFixed(decimals)) : Math.round(end);
                 }
             };
             window.requestAnimationFrame(step);
@@ -255,7 +573,10 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            updateFormAndCalculate(); // Run calculation on load with default values
+            loadFromCache();
+            updateMethodFieldsVisibility();
+            updateWeightUnitUI();
+            calculate();
         });
     </script>
 </body>
