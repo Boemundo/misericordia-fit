@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misericordia Fit Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configurações do PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    
+    <script>
+        // Registro do Service Worker para funcionamento offline
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker Registrado'))
+                .catch(err => console.log('Erro no Service Worker', err));
+        }
+    </script>
+
+    <style>
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #334155;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tab-active {
+            border-bottom: 2px solid #0ea5e9;
+            color: #0ea5e9;
+        }
+        .tab-inactive {
+            color: #94a3b8;
+        }
+        .tab-inactive:hover {
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans">
+    <div class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-slate-700">
+        
+        <!-- Cabeçalho -->
+        <div class="bg-slate-900 p-6 text-center border-b border-slate-700">
+            <img src="image_9a755a.png" alt="Misericordia Fit Logo" class="w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_15px_rgba(14,165,233,0.3)]">
+            <h1 class="text-2xl font-bold text-sky-400">Misericordia Fit Calculator</h1>
+        </div>
+
+        <!-- Abas -->
+        <div class="flex border-b border-slate-700">
+            <button id="tab-tmb" class="flex-1 py-3 text-center font-medium tab-active transition-colors" onclick="switchTab('tmb')">
+                TMB (Basal)
+            </button>
+            <button id="tab-tdee" class="flex-1 py-3 text-center font-medium tab-inactive transition-colors" onclick="switchTab('tdee')">
+                TDEE (Total)
+            </button>
+        </div>
+
+        <div class="p-6 space-y-5">
+            <!-- Método e Tooltip -->
+            <div class="flex items-center justify-between">
+                <label class="block text-sm font-medium text-slate-300">Método de Cálculo</label>
+                <div class="tooltip relative cursor-help inline-block">
+                    <div class="bg-slate-700 text-slate-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
+                        ?
+                    </div>
+                    <div class="tooltip-text" id="method-tooltip">
+                        <strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.
+                    </div>
+                </div>
+            </div>
+            <select id="method" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-all" onchange="updateFormAndCalculate()">
+                <option value="katch">Katch-McArdle (Preciso / Requer BF%)</option>
+                <option value="mifflin">Mifflin-St Jeor (Padrão)</option>
+            </select>
+
+            <!-- Peso -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Peso (kg)</label>
+                <input type="number" id="weight" value="97" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+            </div>
+
+            <!-- Campos Mifflin (Altura, Idade, Gênero) -->
+            <div id="mifflin-fields" class="hidden space-y-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Altura (cm)</label>
+                        <input type="number" id="height" value="169" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Idade</label>
+                        <input type="number" id="age" value="21" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Gênero</label>
+                    <select id="gender" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="calculate()">
+                        <option value="m">Masculino</option>
+                        <option value="f">Feminino</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Campo Katch (BF%) -->
+            <div id="katch-fields" class="block">
+                <label class="block text-sm font-medium text-slate-300 mb-1">Percentual de Gordura (%)</label>
+                <input type="number" id="bf" value="29" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+            </div>
+
+            <!-- Nível de Atividade (Apenas TDEE) -->
+            <div id="activity-section" class="hidden">
+                <label class="block text-sm font-medium text-slate-300 mb-1">Nível de Atividade</label>
+                <select id="activity" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="calculate()">
+                    <option value="1.2">Sedentário (Trabalho de escritório)</option>
+                    <option value="1.375">Levemente Ativo (Exercício 1-3 dias/sem)</option>
+                    <option value="1.55" selected>Moderadamente Ativo (Exercício 3-5 dias/sem)</option>
+                    <option value="1.725">Muito Ativo (Exercício pesado 6-7 dias/sem)</option>
+                    <option value="1.9">Extremamente Ativo (Trabalho físico + Treino)</option>
+                </select>
+            </div>
+
+            <!-- Resultado Prominente -->
+            <div class="mt-8 p-6 bg-slate-900 rounded-xl border border-sky-900/50 shadow-inner text-center">
+                <h2 id="result-label" class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Taxa Metabólica Basal</h2>
+                <div class="flex justify-center items-end space-x-2">
+                    <span id="main-result" class="text-5xl font-extrabold text-sky-400">0</span>
+                    <span class="text-xl text-slate-500 pb-1">kcal</span>
+                </div>
+                <p id="result-desc" class="text-xs text-slate-500 mt-3">Energia necessária apenas para manter as funções vitais em repouso absoluto.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'tmb';
+
+        const tooltips = {
+            katch: '<strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.',
+            mifflin: '<strong class="text-sky-400">Mifflin-St Jeor:</strong> O padrão ouro moderno para o público geral. Usa o peso total e ignora a composição corporal. Tende a superestimar para quem tem muita massa muscular.'
+        };
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // UI Styling
+            document.getElementById('tab-tmb').className = tab === 'tmb' ? 'flex-1 py-3 text-center font-medium tab-active transition-colors' : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
+            document.getElementById('tab-tdee').className = tab === 'tdee' ? 'flex-1 py-3 text-center font-medium tab-active transition-colors' : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
+            
+            // Show/Hide Activity
+            document.getElementById('activity-section').style.display = tab === 'tdee' ? 'block' : 'none';
+            
+            // Update Result Labels
+            document.getElementById('result-label').textContent = tab === 'tmb' ? 'Taxa Metabólica Basal' : 'Gasto Calórico Total (TDEE)';
+            document.getElementById('result-desc').textContent = tab === 'tmb' 
+                ? 'Energia necessária apenas para manter as funções vitais em repouso absoluto.'
+                : 'Estimativa de energia gasta no dia inteiro, incluindo seu treino e rotina.';
+            
+            calculate();
+        }
+
+        function updateFormAndCalculate() {
+            const method = document.getElementById('method').value;
+            const mifflinFields = document.getElementById('mifflin-fields');
+            const katchFields = document.getElementById('katch-fields');
+            const tooltip = document.getElementById('method-tooltip');
+
+            tooltip.innerHTML = tooltips[method];
+
+            if (method === 'mifflin') {
+                mifflinFields.classList.remove('hidden');
+                mifflinFields.classList.add('block');
+                katchFields.classList.remove('block');
+                katchFields.classList.add('hidden');
+            } else {
+                mifflinFields.classList.remove('block');
+                mifflinFields.classList.add('hidden');
+                katchFields.classList.remove('hidden');
+                katchFields.classList.add('block');
+            }
+
+            calculate();
+        }
+
+        function calculate() {
+            const method = document.getElementById('method').value;
+            const weight = parseFloat(document.getElementById('weight').value) || 0;
+            let bmr = 0;
+
+            if (method === 'mifflin') {
+                const height = parseFloat(document.getElementById('height').value) || 0;
+                const age = parseFloat(document.getElementById('age').value) || 0;
+                const gender = document.getElementById('gender').value;
+
+                if (gender === 'm') {
+                    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+                } else {
+                    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                }
+            } else {
+                const bf = parseFloat(document.getElementById('bf').value) || 0;
+                const leanMass = weight * (1 - (bf / 100));
+                bmr = 370 + (21.6 * leanMass);
+            }
+
+            let finalValue = bmr;
+            
+            if (currentTab === 'tdee') {
+                const activityMultiplier = parseFloat(document.getElementById('activity').value);
+                finalValue = bmr * activityMultiplier;
+            }
+
+            // Simple count up animation
+            animateValue("main-result", parseFloat(document.getElementById('main-result').innerText) || 0, Math.round(finalValue), 300);
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (start === end) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            updateFormAndCalculate(); // Run calculation on load with default values
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misericordia Fit Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configurações do PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    
+    <script>
+        // Registro do Service Worker para funcionamento offline
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker Registrado'))
+                .catch(err => console.log('Erro no Service Worker', err));
+        }
+    </script>
+
+    <style>
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: #1e293b;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #334155;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tab-active {
+            border-bottom: 2px solid #0ea5e9;
+            color: #0ea5e9;
+        }
+        .tab-inactive {
+            color: #94a3b8;
+        }
+        .tab-inactive:hover {
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans">
+    <div class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl overflow-hidden border border-slate-700">
+        
+        <!-- Cabeçalho -->
+        <div class="bg-slate-900 p-6 text-center border-b border-slate-700">
+            <img src="image_9a755a.png" alt="Misericordia Fit Logo" class="w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_15px_rgba(14,165,233,0.3)]">
+            <h1 class="text-2xl font-bold text-sky-400">Misericordia Fit Calculator</h1>
+        </div>
+
+        <!-- Abas -->
+        <div class="flex border-b border-slate-700">
+            <button id="tab-tmb" class="flex-1 py-3 text-center font-medium tab-active transition-colors" onclick="switchTab('tmb')">
+                TMB (Basal)
+            </button>
+            <button id="tab-tdee" class="flex-1 py-3 text-center font-medium tab-inactive transition-colors" onclick="switchTab('tdee')">
+                TDEE (Total)
+            </button>
+        </div>
+
+        <div class="p-6 space-y-5">
+            <!-- Método e Tooltip -->
+            <div class="flex items-center justify-between">
+                <label class="block text-sm font-medium text-slate-300">Método de Cálculo</label>
+                <div class="tooltip relative cursor-help inline-block">
+                    <div class="bg-slate-700 text-slate-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
+                        ?
+                    </div>
+                    <div class="tooltip-text" id="method-tooltip">
+                        <strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.
+                    </div>
+                </div>
+            </div>
+            <select id="method" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-all" onchange="updateFormAndCalculate()">
+                <option value="katch">Katch-McArdle (Preciso / Requer BF%)</option>
+                <option value="mifflin">Mifflin-St Jeor (Padrão)</option>
+            </select>
+
+            <!-- Peso -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Peso (kg)</label>
+                <input type="number" id="weight" value="97" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+            </div>
+
+            <!-- Campos Mifflin (Altura, Idade, Gênero) -->
+            <div id="mifflin-fields" class="hidden space-y-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Altura (cm)</label>
+                        <input type="number" id="height" value="169" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Idade</label>
+                        <input type="number" id="age" value="21" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Gênero</label>
+                    <select id="gender" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="calculate()">
+                        <option value="m">Masculino</option>
+                        <option value="f">Feminino</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Campo Katch (BF%) -->
+            <div id="katch-fields" class="block">
+                <label class="block text-sm font-medium text-slate-300 mb-1">Percentual de Gordura (%)</label>
+                <input type="number" id="bf" value="29" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="calculate()">
+            </div>
+
+            <!-- Nível de Atividade (Apenas TDEE) -->
+            <div id="activity-section" class="hidden">
+                <label class="block text-sm font-medium text-slate-300 mb-1">Nível de Atividade</label>
+                <select id="activity" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="calculate()">
+                    <option value="1.2">Sedentário (Trabalho de escritório)</option>
+                    <option value="1.375">Levemente Ativo (Exercício 1-3 dias/sem)</option>
+                    <option value="1.55" selected>Moderadamente Ativo (Exercício 3-5 dias/sem)</option>
+                    <option value="1.725">Muito Ativo (Exercício pesado 6-7 dias/sem)</option>
+                    <option value="1.9">Extremamente Ativo (Trabalho físico + Treino)</option>
+                </select>
+            </div>
+
+            <!-- Resultado Prominente -->
+            <div class="mt-8 p-6 bg-slate-900 rounded-xl border border-sky-900/50 shadow-inner text-center">
+                <h2 id="result-label" class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Taxa Metabólica Basal</h2>
+                <div class="flex justify-center items-end space-x-2">
+                    <span id="main-result" class="text-5xl font-extrabold text-sky-400">0</span>
+                    <span class="text-xl text-slate-500 pb-1">kcal</span>
+                </div>
+                <p id="result-desc" class="text-xs text-slate-500 mt-3">Energia necessária apenas para manter as funções vitais em repouso absoluto.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'tmb';
+
+        const tooltips = {
+            katch: '<strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.',
+            mifflin: '<strong class="text-sky-400">Mifflin-St Jeor:</strong> O padrão ouro moderno para o público geral. Usa o peso total e ignora a composição corporal. Tende a superestimar para quem tem muita massa muscular.'
+        };
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // UI Styling
+            document.getElementById('tab-tmb').className = tab === 'tmb' ? 'flex-1 py-3 text-center font-medium tab-active transition-colors' : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
+            document.getElementById('tab-tdee').className = tab === 'tdee' ? 'flex-1 py-3 text-center font-medium tab-active transition-colors' : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
+            
+            // Show/Hide Activity
+            document.getElementById('activity-section').style.display = tab === 'tdee' ? 'block' : 'none';
+            
+            // Update Result Labels
+            document.getElementById('result-label').textContent = tab === 'tmb' ? 'Taxa Metabólica Basal' : 'Gasto Calórico Total (TDEE)';
+            document.getElementById('result-desc').textContent = tab === 'tmb' 
+                ? 'Energia necessária apenas para manter as funções vitais em repouso absoluto.'
+                : 'Estimativa de energia gasta no dia inteiro, incluindo seu treino e rotina.';
+            
+            calculate();
+        }
+
+        function updateFormAndCalculate() {
+            const method = document.getElementById('method').value;
+            const mifflinFields = document.getElementById('mifflin-fields');
+            const katchFields = document.getElementById('katch-fields');
+            const tooltip = document.getElementById('method-tooltip');
+
+            tooltip.innerHTML = tooltips[method];
+
+            if (method === 'mifflin') {
+                mifflinFields.classList.remove('hidden');
+                mifflinFields.classList.add('block');
+                katchFields.classList.remove('block');
+                katchFields.classList.add('hidden');
+            } else {
+                mifflinFields.classList.remove('block');
+                mifflinFields.classList.add('hidden');
+                katchFields.classList.remove('hidden');
+                katchFields.classList.add('block');
+            }
+
+            calculate();
+        }
+
+        function calculate() {
+            const method = document.getElementById('method').value;
+            const weight = parseFloat(document.getElementById('weight').value) || 0;
+            let bmr = 0;
+
+            if (method === 'mifflin') {
+                const height = parseFloat(document.getElementById('height').value) || 0;
+                const age = parseFloat(document.getElementById('age').value) || 0;
+                const gender = document.getElementById('gender').value;
+
+                if (gender === 'm') {
+                    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+                } else {
+                    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                }
+            } else {
+                const bf = parseFloat(document.getElementById('bf').value) || 0;
+                const leanMass = weight * (1 - (bf / 100));
+                bmr = 370 + (21.6 * leanMass);
+            }
+
+            let finalValue = bmr;
+            
+            if (currentTab === 'tdee') {
+                const activityMultiplier = parseFloat(document.getElementById('activity').value);
+                finalValue = bmr * activityMultiplier;
+            }
+
+            // Simple count up animation
+            animateValue("main-result", parseFloat(document.getElementById('main-result').innerText) || 0, Math.round(finalValue), 300);
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (start === end) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            updateFormAndCalculate(); // Run calculation on load with default values
+        });
+    </script>
+</body>
+</html>
