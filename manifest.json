@@ -1,6 +1,6 @@
 {
-  "name": "Misericordia Fit Calculator",
-  "short_name": "Misericordia",
+  "name": "Brass Bell Metrics",
+  "short_name": "Brass Bell",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",

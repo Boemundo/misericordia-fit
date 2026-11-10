@@ -1,4 +1,4 @@
-const CACHE_NAME = 'misericordia-fit-v6';
+const CACHE_NAME = 'misericordia-fit-v7';
 const urlsToCache = [
   './',
   './index.html',
