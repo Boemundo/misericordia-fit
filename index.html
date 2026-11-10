@@ -206,7 +206,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p id="stones-header-subtitle" class="text-xs text-zinc-400">1 stone (st) = 6,35 kg (14 lb). Alterne entre <strong>kg</strong> e <strong>st</strong> abaixo para converter nos dois sentidos.</p>
+                        <p id="stones-header-subtitle" class="text-xs text-zinc-400">1 stone (st) = 14 lb = 6,35 kg • 1 kg = 2,20 lb. Alterne entre <strong>kg</strong>, <strong>lb</strong> e <strong>st</strong> abaixo para converter.</p>
                     </div>
 
                     <!-- Método e Tooltip (1 único ? nas abas TMB e TDEE) -->
@@ -228,13 +228,16 @@
                         </select>
                     </div>
 
-                    <!-- Peso com seletor kg / stones (st) -->
+                    <!-- Peso com seletor kg / lb / st -->
                     <div>
                         <div class="flex items-center justify-between mb-1.5">
                             <label id="weight-label" class="block text-sm font-medium text-zinc-300">Peso (kg)</label>
                             <div id="unit-toggle-group" class="inline-flex rounded-lg p-0.5 bg-zinc-950 border border-zinc-700 text-xs transition-colors">
                                 <button type="button" id="unit-btn-kg" onclick="setWeightUnit('kg')" class="px-2.5 py-1 rounded-md font-semibold bg-sky-500 text-white transition-colors">
                                     kg
+                                </button>
+                                <button type="button" id="unit-btn-lb" onclick="setWeightUnit('lb')" class="px-2.5 py-1 rounded-md font-semibold text-zinc-400 hover:text-zinc-200 transition-colors">
+                                    lb (libras)
                                 </button>
                                 <button type="button" id="unit-btn-st" onclick="setWeightUnit('st')" class="px-2.5 py-1 rounded-md font-semibold text-zinc-400 hover:text-zinc-200 transition-colors">
                                     st (pedras)
@@ -460,10 +463,11 @@
 
     <script>
         const KG_PER_STONE = 6.35029318;
+        const LB_PER_KG = 2.20462262185;
         const STORAGE_KEY = 'misericordia_fit_cache_v1';
 
         let currentTab = 'tmb';
-        let weightUnit = 'kg'; // 'kg' ou 'st'
+        let weightUnit = 'kg'; // 'kg', 'lb' ou 'st'
         let storedWeightKg = null;
         let colorMode = 'dark'; // 'dark' ou 'light'
         let userOverrodeTheme = false;
@@ -600,30 +604,31 @@
                 if (data.activity) {
                     document.getElementById('activity').value = data.activity;
                 }
-                if (data.weightUnit === 'kg' || data.weightUnit === 'st') {
+                if (['kg', 'lb', 'st'].includes(data.weightUnit)) {
                     weightUnit = data.weightUnit;
                 }
                 if (typeof data.weightKg === 'number' && data.weightKg > 0) {
                     storedWeightKg = data.weightKg;
-                    const displayVal = weightUnit === 'kg'
-                        ? formatNumber(storedWeightKg, 1)
-                        : formatNumber(storedWeightKg / KG_PER_STONE, 2);
-                    document.getElementById('weight').value = displayVal;
+                    document.getElementById('weight').value = getDisplayWeightFromKg(storedWeightKg, weightUnit);
                 }
             } catch (e) {
                 console.warn('Erro ao carregar cache local:', e);
             }
         }
 
+        function getDisplayWeightFromKg(kg, unit) {
+            if (unit === 'kg') return formatNumber(kg, 1);
+            if (unit === 'lb') return formatNumber(kg * LB_PER_KG, 1);
+            return formatNumber(kg / KG_PER_STONE, 2);
+        }
+
         function setWeightUnit(unit) {
-            if (unit !== 'kg' && unit !== 'st') return;
+            if (!['kg', 'lb', 'st'].includes(unit)) return;
             weightUnit = unit;
 
             const weightInput = document.getElementById('weight');
             if (storedWeightKg !== null && storedWeightKg > 0) {
-                weightInput.value = unit === 'kg'
-                    ? formatNumber(storedWeightKg, 1)
-                    : formatNumber(storedWeightKg / KG_PER_STONE, 2);
+                weightInput.value = getDisplayWeightFromKg(storedWeightKg, unit);
             }
 
             updateWeightUnitUI();
@@ -637,10 +642,19 @@
             const weightLabel = document.getElementById('weight-label');
             const weightInput = document.getElementById('weight');
             const btnKg = document.getElementById('unit-btn-kg');
+            const btnLb = document.getElementById('unit-btn-lb');
             const btnSt = document.getElementById('unit-btn-st');
 
-            weightLabel.textContent = weightUnit === 'kg' ? 'Peso (kg)' : 'Peso em Pedras (st)';
-            weightInput.placeholder = weightUnit === 'kg' ? 'Ex: 75' : 'Ex: 11.8';
+            if (weightUnit === 'kg') {
+                weightLabel.textContent = 'Peso (kg)';
+                weightInput.placeholder = 'Ex: 75';
+            } else if (weightUnit === 'lb') {
+                weightLabel.textContent = 'Peso em Libras (lb)';
+                weightInput.placeholder = 'Ex: 165';
+            } else {
+                weightLabel.textContent = 'Peso em Pedras (st)';
+                weightInput.placeholder = 'Ex: 11.8';
+            }
 
             let activeClass, inactiveClass;
             if (isStone) {
@@ -660,13 +674,20 @@
             }
 
             btnKg.className = weightUnit === 'kg' ? activeClass : inactiveClass;
+            btnLb.className = weightUnit === 'lb' ? activeClass : inactiveClass;
             btnSt.className = weightUnit === 'st' ? activeClass : inactiveClass;
         }
 
         function onWeightInput() {
             const rawVal = parseFloat(document.getElementById('weight').value);
             if (!isNaN(rawVal) && rawVal > 0) {
-                storedWeightKg = weightUnit === 'kg' ? rawVal : rawVal * KG_PER_STONE;
+                if (weightUnit === 'kg') {
+                    storedWeightKg = rawVal;
+                } else if (weightUnit === 'lb') {
+                    storedWeightKg = rawVal / LB_PER_KG;
+                } else {
+                    storedWeightKg = rawVal * KG_PER_STONE;
+                }
             } else {
                 storedWeightKg = null;
             }
@@ -1106,13 +1127,19 @@
             // Atualiza a calculadora de Macros com a fórmula atual
             updateMacrosCard(bmr, weightKg, method);
 
-            // Dica rápida de equivalência abaixo do campo de peso nas abas TMB/TDEE
-            if (currentTab !== 'stones' && weightKg > 0) {
+            // Dica rápida de equivalência abaixo do campo de peso (kg ⇄ lb ⇄ st)
+            if (weightKg > 0) {
                 hintEl.classList.remove('hidden');
+                const lbsVal = (weightKg * LB_PER_KG).toFixed(1);
+                const stVal = (weightKg / KG_PER_STONE).toFixed(2);
+                const kgVal = weightKg.toFixed(1);
+
                 if (weightUnit === 'kg') {
-                    hintEl.textContent = `Equivale a ${(weightKg / KG_PER_STONE).toFixed(2)} st (pedras)`;
+                    hintEl.textContent = `Equivale a ${lbsVal} lb (libras) • ${stVal} st (pedras)`;
+                } else if (weightUnit === 'lb') {
+                    hintEl.textContent = `Equivale a ${kgVal} kg • ${stVal} st (pedras)`;
                 } else {
-                    hintEl.textContent = `Equivale a ${weightKg.toFixed(1)} kg`;
+                    hintEl.textContent = `Equivale a ${kgVal} kg • ${lbsVal} lb (libras)`;
                 }
             } else {
                 hintEl.classList.add('hidden');
@@ -1123,27 +1150,34 @@
                 const resultLabel = document.getElementById('result-label');
                 const resultUnit = document.getElementById('result-unit');
                 const resultDesc = document.getElementById('result-desc');
+                const stonesVal = weightKg > 0 ? weightKg / KG_PER_STONE : 0;
+                const lbsTotal = weightKg > 0 ? weightKg * LB_PER_KG : 0;
+                const totalPoundsRounded = Math.round(stonesVal * 14);
+                const wholeStones = Math.floor(totalPoundsRounded / 14);
+                const remainingPounds = totalPoundsRounded % 14;
 
                 if (weightUnit === 'kg') {
-                    const stonesVal = weightKg > 0 ? weightKg / KG_PER_STONE : 0;
-                    const totalPounds = Math.round(stonesVal * 14);
-                    const wholeStones = Math.floor(totalPounds / 14);
-                    const remainingPounds = totalPounds % 14;
-
                     resultLabel.textContent = 'Seu Peso em Pedras (Stones)';
                     resultUnit.textContent = 'st';
                     resultDesc.textContent = weightKg > 0
-                        ? `Formato britânico tradicional: ${wholeStones} st e ${remainingPounds} lb (${weightKg.toFixed(1)} kg).`
-                        : 'Digite seu peso acima para converter entre quilos (kg) e pedras (st).';
+                        ? `${wholeStones} st e ${remainingPounds} lb • ${lbsTotal.toFixed(1)} lb totais (${weightKg.toFixed(1)} kg).`
+                        : 'Digite seu peso acima para converter entre quilos (kg), libras (lb) e pedras (st).';
+
+                    animateValue('main-result', parseFloat(document.getElementById('main-result').innerText) || 0, stonesVal, 300, 2);
+                } else if (weightUnit === 'lb') {
+                    resultLabel.textContent = 'Seu Peso em Pedras (Stones)';
+                    resultUnit.textContent = 'st';
+                    resultDesc.textContent = weightKg > 0
+                        ? `${lbsTotal.toFixed(1)} lb = ${weightKg.toFixed(1)} kg • Formato britânico: ${wholeStones} st e ${remainingPounds} lb.`
+                        : 'Digite as libras (lb) acima para converter em quilos (kg) e pedras (st).';
 
                     animateValue('main-result', parseFloat(document.getElementById('main-result').innerText) || 0, stonesVal, 300, 2);
                 } else {
-                    const stonesInputVal = weightKg > 0 ? weightKg / KG_PER_STONE : 0;
                     resultLabel.textContent = 'Seu Peso em Quilogramas';
                     resultUnit.textContent = 'kg';
                     resultDesc.textContent = weightKg > 0
-                        ? `${stonesInputVal.toFixed(2)} st equivalem a ${weightKg.toFixed(2)} kg (${(stonesInputVal * 14).toFixed(1)} lb).`
-                        : 'Digite as pedras (st) acima para descobrir o equivalente em quilos (kg).';
+                        ? `${stonesVal.toFixed(2)} st equivalem a ${weightKg.toFixed(2)} kg (${lbsTotal.toFixed(1)} lb).`
+                        : 'Digite as pedras (st) acima para descobrir o equivalente em quilos (kg) e libras (lb).';
 
                     animateValue('main-result', parseFloat(document.getElementById('main-result').innerText) || 0, weightKg, 300, 1);
                 }
