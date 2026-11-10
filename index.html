@@ -370,6 +370,12 @@
                         <div id="macro-bar-fat" class="bg-amber-500 h-full transition-all duration-300" style="width: 33%"></div>
                     </div>
 
+                    <!-- Recomendação diária de Fibras (não entra na soma calórica) -->
+                    <div id="macro-fiber-row" class="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs transition-colors">
+                        <span class="font-semibold text-emerald-400">Fibras Recomendadas</span>
+                        <span id="macro-fiber-val" class="text-zinc-400">~0 g/dia <span class="text-[11px] opacity-75">(14g / 1000 kcal)</span></span>
+                    </div>
+
                     <div class="flex items-center justify-between text-xs pt-1">
                         <span id="macro-lbm-note" class="text-zinc-500">Preencha seus dados acima</span>
                         <a href="#macro-guide" id="macro-guide-link" class="font-semibold text-sky-400 hover:underline inline-flex items-center gap-1">
@@ -393,19 +399,19 @@
         </div>
     </div>
 
-    <!-- SEÇÃO INFERIOR: Guia Rápido dos Macronutrientes (Alvo da rolagem suave) -->
-    <section id="macro-guide" class="max-w-4xl w-full mx-auto mt-16 mb-8 pt-8 border-t border-zinc-800/80 transition-colors">
+    <!-- SEÇÃO INFERIOR: Guia Rápido dos Macronutrientes e Fibras (Alvo da rolagem suave) -->
+    <section id="macro-guide" class="max-w-5xl w-full mx-auto mt-16 mb-8 pt-8 border-t border-zinc-800/80 transition-colors">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h2 id="guide-heading" class="text-xl font-bold text-zinc-100">Para que servem os Macronutrientes?</h2>
-                <p id="guide-subheading" class="text-xs text-zinc-400 mt-1">Entenda a função biológica de cada macro na sua composição corporal e desempenho.</p>
+                <h2 id="guide-heading" class="text-xl font-bold text-zinc-100">Para que servem os Macronutrientes e as Fibras?</h2>
+                <p id="guide-subheading" class="text-xs text-zinc-400 mt-1">Entenda a função biológica de cada nutriente na sua composição corporal, saciedade e desempenho.</p>
             </div>
             <a href="#top-calculator" id="back-to-top-link" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500 transition-colors">
                 ↑ Voltar ao topo
             </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Guia: Proteínas -->
             <div id="guide-card-prot" class="p-5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 transition-colors">
                 <div class="flex items-center justify-between">
@@ -436,6 +442,17 @@
                 </div>
                 <p id="guide-text-fat" class="text-xs text-zinc-400 leading-relaxed">
                     Indispensáveis para a <strong>produção hormonal</strong> (incluindo testosterona e hormônios metabólicos), saúde das articulações e absorção das vitaminas lipossolúveis (A, D, E e K).
+                </p>
+            </div>
+
+            <!-- Guia: Fibras Alimentares -->
+            <div id="guide-card-fiber" class="p-5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 transition-colors">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-bold text-emerald-400">Fibras</span>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">~14g / 1000 kcal</span>
+                </div>
+                <p id="guide-text-fiber" class="text-xs text-zinc-400 leading-relaxed">
+                    Embora não entrem na conta calórica, são essenciais para <strong>prolongar a saciedade</strong> no <em>Cutting</em>, evitar picos de insulina/glicemia e manter a digestão e a microbiota saudáveis em dietas ricas em proteína.
                 </p>
             </div>
         </div>
@@ -703,13 +720,15 @@
             const goalBtnGroup = document.getElementById('goal-btn-group');
             const goalDesc = document.getElementById('goal-desc');
             const macroBoxes = ['macro-box-prot', 'macro-box-carb', 'macro-box-fat'];
+            const macroFiberRow = document.getElementById('macro-fiber-row');
+            const macroFiberVal = document.getElementById('macro-fiber-val');
             const macroGuideLink = document.getElementById('macro-guide-link');
             const macroGuideSection = document.getElementById('macro-guide');
             const guideHeading = document.getElementById('guide-heading');
             const guideSubheading = document.getElementById('guide-subheading');
             const backToTopLink = document.getElementById('back-to-top-link');
-            const guideCards = ['guide-card-prot', 'guide-card-carb', 'guide-card-fat'];
-            const guideTexts = ['guide-text-prot', 'guide-text-carb', 'guide-text-fat'];
+            const guideCards = ['guide-card-prot', 'guide-card-carb', 'guide-card-fat', 'guide-card-fiber'];
+            const guideTexts = ['guide-text-prot', 'guide-text-carb', 'guide-text-fat', 'guide-text-fiber'];
 
             const labelIds = ['method-label', 'weight-label', 'height-label', 'age-label', 'gender-label', 'bf-label', 'activity-label'];
             const inputs = document.querySelectorAll('.form-input');
@@ -779,8 +798,10 @@
                 macroBoxes.forEach(id => {
                     document.getElementById(id).className = 'p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 text-center transition-colors';
                 });
+                macroFiberRow.className = 'flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-50 border border-zinc-200 text-xs transition-colors';
+                macroFiberVal.className = 'text-zinc-600 font-medium';
 
-                macroGuideSection.className = 'max-w-4xl w-full mx-auto mt-16 mb-8 pt-8 border-t border-zinc-300 transition-colors';
+                macroGuideSection.className = 'max-w-5xl w-full mx-auto mt-16 mb-8 pt-8 border-t border-zinc-300 transition-colors';
                 guideHeading.className = 'text-xl font-bold text-zinc-900';
                 guideSubheading.className = 'text-xs text-zinc-600 mt-1';
                 backToTopLink.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg border border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 shadow-sm transition-colors';
@@ -863,8 +884,10 @@
                 macroBoxes.forEach(id => {
                     document.getElementById(id).className = 'p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-center transition-colors';
                 });
+                macroFiberRow.className = 'flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs transition-colors';
+                macroFiberVal.className = 'text-zinc-400 font-medium';
 
-                macroGuideSection.className = 'max-w-4xl w-full mx-auto mt-16 mb-8 pt-8 border-t border-zinc-800/80 transition-colors';
+                macroGuideSection.className = 'max-w-5xl w-full mx-auto mt-16 mb-8 pt-8 border-t border-zinc-800/80 transition-colors';
                 guideHeading.className = 'text-xl font-bold text-zinc-100';
                 guideSubheading.className = 'text-xs text-zinc-400 mt-1';
                 backToTopLink.className = 'text-xs font-semibold px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500 transition-colors';
@@ -996,6 +1019,7 @@
                 document.getElementById('macro-prot-kcal').textContent = '0 kcal';
                 document.getElementById('macro-carb-kcal').textContent = '0 kcal';
                 document.getElementById('macro-fat-kcal').textContent = '0 kcal';
+                document.getElementById('macro-fiber-val').innerHTML = '~0 g/dia <span class="text-[11px] opacity-75">(14g / 1000 kcal)</span>';
                 document.getElementById('macro-bar-prot').style.width = '33.3%';
                 document.getElementById('macro-bar-carb').style.width = '33.3%';
                 document.getElementById('macro-bar-fat').style.width = '33.4%';
@@ -1004,6 +1028,9 @@
                     : 'Preencha Peso, Altura e Idade para calcular';
                 return;
             }
+
+            const fiberGrams = Math.round((targetKcal / 1000) * 14);
+            document.getElementById('macro-fiber-val').innerHTML = `<strong>~${fiberGrams} g/dia</strong> <span class="text-[11px] opacity-75">(14g / 1000 kcal)</span>`;
 
             let protG = 0;
             let fatG = 0;
