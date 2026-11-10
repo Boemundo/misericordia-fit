@@ -1,9 +1,11 @@
-const CACHE_NAME = 'misericordia-fit-v12';
+const CACHE_NAME = 'misericordia-fit-v13';
 const urlsToCache = [
   './',
   './index.html',
   './image_9a755a.png',
   './sino_bronze.jpg',
+  './icon-192.png',
+  './icon-512.png',
   './milon_left.png',
   './milon_right.png',
   './manifest.json'
