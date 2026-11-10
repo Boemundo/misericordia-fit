@@ -50,6 +50,11 @@
             visibility: visible;
             opacity: 1;
         }
+        .tooltip.tooltip-down .tooltip-text {
+            bottom: auto;
+            top: 135%;
+            z-index: 30;
+        }
         .tab-active-blue {
             border-bottom: 2px solid #0ea5e9;
             color: #0ea5e9;
@@ -95,11 +100,27 @@
         </div>
 
         <div class="p-6 space-y-5">
+            <!-- Cabeçalho Explicativo das Abas TMB e TDEE -->
+            <div id="tab-info-section" class="space-y-1.5 pb-3 border-b border-slate-700/70">
+                <div class="flex items-center justify-between">
+                    <h2 id="tab-info-title" class="text-base font-semibold text-sky-400">O que é a TMB (Basal)?</h2>
+                    <div class="tooltip tooltip-down relative cursor-help inline-block" tabindex="0">
+                        <div class="bg-slate-700 text-slate-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
+                            ?
+                        </div>
+                        <div class="tooltip-text" id="tab-info-tooltip">
+                            <strong class="text-sky-400">Sobre o App:</strong> App dedicado para facilitar o cálculo da Taxa Metabólica Basal e do Gasto Calórico Total.<br><br><strong class="text-sky-300">TMB (Taxa Metabólica Basal):</strong> É a quantidade mínima de energia (kcal) que seu corpo gasta em repouso absoluto apenas para manter funções vitais, como respiração, batimentos cardíacos e temperatura corporal.
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400">App dedicado para facilitar o cálculo da Taxa Metabólica Basal e Gasto Calórico Total.</p>
+            </div>
+
             <!-- Cabeçalho da Aba Pedras (st) + História -->
-            <div id="stones-header-section" class="hidden space-y-2">
+            <div id="stones-header-section" class="hidden space-y-2 pb-3 border-b border-zinc-800">
                 <div class="flex items-center justify-between">
                     <h2 class="text-base font-semibold text-zinc-200">Quantas pedras (st) você pesa?</h2>
-                    <div class="tooltip relative cursor-help inline-block" tabindex="0">
+                    <div class="tooltip tooltip-down relative cursor-help inline-block" tabindex="0">
                         <div class="bg-zinc-700 text-zinc-200 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-zinc-500 hover:text-white transition-colors">
                             ?
                         </div>
@@ -209,6 +230,11 @@
         const tooltips = {
             katch: '<strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.',
             mifflin: '<strong class="text-sky-400">Mifflin-St Jeor:</strong> O padrão ouro moderno para o público geral. Usa o peso total e ignora a composição corporal. Tende a superestimar para quem tem muita massa muscular.'
+        };
+
+        const tabInfoTooltips = {
+            tmb: '<strong class="text-sky-400">Sobre o App:</strong> App dedicado para facilitar o cálculo da Taxa Metabólica Basal e do Gasto Calórico Total.<br><br><strong class="text-sky-300">TMB (Taxa Metabólica Basal):</strong> É a quantidade mínima de energia (kcal) que seu corpo gasta em repouso absoluto apenas para manter funções vitais, como respiração, batimentos cardíacos e temperatura corporal.',
+            tdee: '<strong class="text-sky-400">Sobre o App:</strong> App dedicado para facilitar o cálculo da Taxa Metabólica Basal e do Gasto Calórico Total.<br><br><strong class="text-sky-300">TDEE (Gasto Calórico Total):</strong> Soma a sua TMB com toda a energia gasta no seu dia (trabalho, rotina e treinos). É a sua <strong>caloria de manutenção</strong>: comer menos gera emagrecimento (déficit) e comer mais gera ganho de massa (superávit).'
         };
 
         function formatNumber(num, decimals = 2) {
@@ -401,6 +427,9 @@
                 : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
 
             // Mostrar / esconder seções conforme a aba
+            const tabInfoSection = document.getElementById('tab-info-section');
+            const tabInfoTitle = document.getElementById('tab-info-title');
+            const tabInfoTooltip = document.getElementById('tab-info-tooltip');
             const stonesHeader = document.getElementById('stones-header-section');
             const methodSection = document.getElementById('method-section');
             const mifflinFields = document.getElementById('mifflin-fields');
@@ -408,6 +437,7 @@
             const activitySection = document.getElementById('activity-section');
 
             if (isStone) {
+                tabInfoSection.classList.add('hidden');
                 stonesHeader.classList.remove('hidden');
                 methodSection.classList.add('hidden');
                 mifflinFields.classList.add('hidden');
@@ -416,6 +446,9 @@
                 katchFields.classList.remove('block');
                 activitySection.style.display = 'none';
             } else {
+                tabInfoSection.classList.remove('hidden');
+                tabInfoTitle.textContent = tab === 'tmb' ? 'O que é a TMB (Basal)?' : 'O que é o TDEE (Total)?';
+                tabInfoTooltip.innerHTML = tabInfoTooltips[tab];
                 stonesHeader.classList.add('hidden');
                 methodSection.classList.remove('hidden');
                 activitySection.style.display = tab === 'tdee' ? 'block' : 'none';
