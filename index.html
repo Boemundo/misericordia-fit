@@ -81,8 +81,19 @@
     <div id="app-card" class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl border border-slate-700 transition-colors duration-300">
         
         <!-- Cabeçalho -->
-        <div id="app-header" class="bg-slate-900 p-6 text-center border-b border-slate-700 rounded-t-xl transition-colors duration-300">
-            <img id="app-logo" src="image_9a755a.png" alt="Misericordia Fit Logo" class="w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all duration-300">
+        <div id="app-header" class="bg-slate-900 pt-4 pb-6 px-6 text-center border-b border-slate-700 rounded-t-xl transition-colors duration-300">
+            <!-- Marca discreta no canto superior esquerdo -->
+            <div class="flex items-center justify-start gap-2 mb-3">
+                <img id="brand-logo" src="image_9a755a.png" alt="Manhã de Morango S/A" class="w-8 h-8 rounded-full object-cover border border-sky-400/70 shadow-sm transition-all duration-300">
+                <span id="brand-text" class="text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-300">Manhã de Morango S/A</span>
+            </div>
+
+            <!-- Imagem central Sino de Bronze com legenda -->
+            <div class="flex flex-col items-center">
+                <img id="app-logo" src="sino_bronze.jpg" alt="Sino de Bronze" class="w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all duration-300">
+                <span id="logo-caption" class="text-xs font-semibold uppercase tracking-widest text-amber-400/90 mt-2 mb-2 transition-colors duration-300">Sino de Bronze</span>
+            </div>
+
             <h1 id="app-title" class="text-2xl font-bold text-sky-400 transition-colors duration-300">Misericordia Fit Calculator</h1>
         </div>
 
@@ -358,6 +369,9 @@
             const card = document.getElementById('app-card');
             const header = document.getElementById('app-header');
             const logo = document.getElementById('app-logo');
+            const logoCaption = document.getElementById('logo-caption');
+            const brandLogo = document.getElementById('brand-logo');
+            const brandText = document.getElementById('brand-text');
             const title = document.getElementById('app-title');
             const tabsContainer = document.getElementById('tabs-container');
             const unitToggleGroup = document.getElementById('unit-toggle-group');
@@ -374,8 +388,11 @@
                 body.classList.add('theme-stone');
                 body.className = 'theme-stone bg-zinc-950 text-zinc-200 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300';
                 card.className = 'max-w-md mx-auto bg-zinc-900 rounded-xl shadow-2xl border border-zinc-700 transition-colors duration-300';
-                header.className = 'bg-zinc-950 p-6 text-center border-b border-zinc-800 rounded-t-xl transition-colors duration-300';
-                logo.className = 'w-24 h-24 mx-auto rounded-full object-cover border-2 border-zinc-400 mb-4 shadow-[0_0_15px_rgba(161,161,170,0.25)] grayscale transition-all duration-300';
+                header.className = 'bg-zinc-950 pt-4 pb-6 px-6 text-center border-b border-zinc-800 rounded-t-xl transition-colors duration-300';
+                logo.className = 'w-24 h-24 mx-auto rounded-full object-cover border-2 border-zinc-400 shadow-[0_0_15px_rgba(161,161,170,0.25)] grayscale transition-all duration-300';
+                logoCaption.className = 'text-xs font-semibold uppercase tracking-widest text-zinc-400 mt-2 mb-2 transition-colors duration-300';
+                brandLogo.className = 'w-8 h-8 rounded-full object-cover border border-zinc-500 shadow-sm grayscale transition-all duration-300';
+                brandText.className = 'text-xs font-semibold tracking-wide text-zinc-400 transition-colors duration-300';
                 title.className = 'text-2xl font-bold text-zinc-200 transition-colors duration-300';
                 tabsContainer.className = 'flex border-b border-zinc-800 text-sm md:text-base transition-colors duration-300';
                 unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-zinc-950 border border-zinc-700 text-xs';
@@ -391,8 +408,11 @@
                 body.classList.remove('theme-stone');
                 body.className = 'bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300';
                 card.className = 'max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl border border-slate-700 transition-colors duration-300';
-                header.className = 'bg-slate-900 p-6 text-center border-b border-slate-700 rounded-t-xl transition-colors duration-300';
-                logo.className = 'w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all duration-300';
+                header.className = 'bg-slate-900 pt-4 pb-6 px-6 text-center border-b border-slate-700 rounded-t-xl transition-colors duration-300';
+                logo.className = 'w-24 h-24 mx-auto rounded-full object-cover border-2 border-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all duration-300';
+                logoCaption.className = 'text-xs font-semibold uppercase tracking-widest text-amber-400/90 mt-2 mb-2 transition-colors duration-300';
+                brandLogo.className = 'w-8 h-8 rounded-full object-cover border border-sky-400/70 shadow-sm transition-all duration-300';
+                brandText.className = 'text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-300';
                 title.className = 'text-2xl font-bold text-sky-400 transition-colors duration-300';
                 tabsContainer.className = 'flex border-b border-slate-700 text-sm md:text-base transition-colors duration-300';
                 unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-slate-900 border border-slate-700 text-xs';
