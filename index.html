@@ -8,7 +8,7 @@
     
     <!-- Configurações do PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a" id="meta-theme-color">
+    <meta name="theme-color" content="#09090b" id="meta-theme-color">
     
     <script>
         // Registro do Service Worker para funcionamento offline
@@ -20,12 +20,52 @@
     </script>
 
     <style>
+        /* Fundo pontilhado para o Tema Claro (Branco) */
+        body.mode-light {
+            background-color: #ffffff;
+            background-image: radial-gradient(#a1a1aa 1.35px, transparent 1.35px);
+            background-size: 18px 18px;
+        }
+        body.mode-light.theme-stone {
+            background-color: #f4f4f5;
+            background-image: radial-gradient(#71717a 1.35px, transparent 1.35px);
+            background-size: 18px 18px;
+        }
+
+        /* Fundo escuro para o Tema Escuro (Preto) */
+        body.mode-dark {
+            background-color: #050507;
+            background-image: none;
+        }
+        body.mode-dark.theme-stone {
+            background-color: #09090b;
+            background-image: none;
+        }
+
+        /* Estilo das figuras de Mílon de Crotona */
+        .milon-figure {
+            transition: filter 0.35s ease, opacity 0.35s ease, transform 0.35s ease;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        /* No tema escuro: silhueta/traços esbranquiçados com brilho suave */
+        body.mode-dark .milon-figure {
+            filter: invert(1) brightness(1.15) drop-shadow(0 0 3px rgba(255, 255, 255, 0.55)) drop-shadow(0 0 14px rgba(255, 255, 255, 0.22));
+            opacity: 0.92;
+        }
+        /* No tema claro: gravura escura original nítida sobre o fundo pontilhado */
+        body.mode-light .milon-figure {
+            filter: contrast(1.1) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
+            opacity: 0.95;
+        }
+
+        /* Tooltips */
         .tooltip .tooltip-text {
             visibility: hidden;
             width: 270px;
             max-width: 80vw;
-            background-color: #1e293b;
-            color: #fff;
+            background-color: #18181b;
+            color: #fafafa;
             text-align: left;
             border-radius: 8px;
             padding: 12px;
@@ -34,16 +74,17 @@
             bottom: 135%;
             right: 0;
             opacity: 0;
-            transition: opacity 0.3s, background-color 0.3s, border-color 0.3s;
+            transition: opacity 0.25s, background-color 0.25s, border-color 0.25s;
             font-size: 0.875rem;
             line-height: 1.45;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
-            border: 1px solid #334155;
+            box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.35);
+            border: 1px solid #3f3f46;
             pointer-events: none;
         }
-        body.theme-stone .tooltip .tooltip-text {
-            background-color: #27272a;
-            border-color: #52525b;
+        body.mode-light .tooltip .tooltip-text {
+            background-color: #18181b;
+            color: #f8fafc;
+            border-color: #3f3f46;
         }
         .tooltip:hover .tooltip-text,
         .tooltip:focus-within .tooltip-text {
@@ -55,177 +96,216 @@
             top: 135%;
             z-index: 30;
         }
-        .tab-active-blue {
-            border-bottom: 2px solid #0ea5e9;
-            color: #0ea5e9;
+
+        /* Abas */
+        .tab-active-blue-dark {
+            border-bottom: 2px solid #38bdf8;
+            color: #38bdf8;
         }
-        .tab-active-stone {
-            border-bottom: 2px solid #d4d4d8;
-            color: #f4f4f5;
+        .tab-active-blue-light {
+            border-bottom: 2px solid #0284c7;
+            color: #0284c7;
         }
-        .tab-inactive {
-            color: #94a3b8;
+        .tab-active-stone-dark {
+            border-bottom: 2px solid #e4e4e7;
+            color: #fafafa;
         }
-        .tab-inactive:hover {
-            color: #e2e8f0;
+        .tab-active-stone-light {
+            border-bottom: 2px solid #27272a;
+            color: #18181b;
         }
-        body.theme-stone .tab-inactive {
+        .tab-inactive-dark {
             color: #a1a1aa;
         }
-        body.theme-stone .tab-inactive:hover {
-            color: #e4e4e7;
+        .tab-inactive-dark:hover {
+            color: #f4f4f5;
+        }
+        .tab-inactive-light {
+            color: #71717a;
+        }
+        .tab-inactive-light:hover {
+            color: #18181b;
         }
     </style>
 </head>
-<body id="app-body" class="bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300">
-    <div id="app-card" class="max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl border border-slate-700 transition-colors duration-300">
-        
-        <!-- Cabeçalho -->
-        <div id="app-header" class="bg-slate-900 pt-4 pb-6 px-6 text-center border-b border-slate-700 rounded-t-xl transition-colors duration-300">
-            <!-- Marca discreta no canto superior esquerdo -->
-            <div class="flex items-center justify-start gap-2 mb-3">
-                <img id="brand-logo" src="image_9a755a.png" alt="Manhã de Morango S/A" class="w-8 h-8 rounded-full object-cover border border-sky-400/70 shadow-sm transition-all duration-300">
-                <span id="brand-text" class="text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-300">Manhã de Morango S/A</span>
-            </div>
+<body id="app-body" class="mode-dark text-zinc-100 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300 flex flex-col justify-center">
 
-            <!-- Imagem central Sino de Bronze -->
-            <div class="flex flex-col items-center">
-                <img id="app-logo" src="sino_bronze.jpg" alt="Brass Bell Metrics Logo" class="w-36 h-36 md:w-40 md:h-40 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_20px_rgba(14,165,233,0.35)] transition-all duration-300">
-            </div>
+    <!-- Layout Principal com Mílon de Crotona nas laterais -->
+    <div class="max-w-6xl w-full mx-auto flex flex-col lg:flex-row items-center justify-center gap-6 xl:gap-12">
 
-            <h1 id="app-title" class="text-2xl font-bold text-sky-400 transition-colors duration-300">Brass Bell Metrics</h1>
+        <!-- Lateral Esquerda (Desktop): Mílon Jovem carregando o bezerro -->
+        <div class="hidden lg:flex flex-col items-center justify-center flex-1 pointer-events-none select-none">
+            <img src="milon_left.png" alt="Mílon de Crotona carregando o bezerro" class="milon-figure w-36 xl:w-44 h-auto object-contain">
         </div>
 
-        <!-- Abas -->
-        <div id="tabs-container" class="flex border-b border-slate-700 text-sm md:text-base transition-colors duration-300">
-            <button id="tab-tmb" class="flex-1 py-3 text-center font-medium tab-active-blue transition-colors" onclick="switchTab('tmb')">
-                TMB (Basal)
-            </button>
-            <button id="tab-tdee" class="flex-1 py-3 text-center font-medium tab-inactive transition-colors" onclick="switchTab('tdee')">
-                TDEE (Total)
-            </button>
-            <button id="tab-stones" class="flex-1 py-3 text-center font-medium tab-inactive transition-colors" onclick="switchTab('stones')">
-                Pedras (st)
-            </button>
-        </div>
-
-        <div class="p-6 space-y-5">
-            <!-- Cabeçalho Explicativo das Abas TMB e TDEE -->
-            <div id="tab-info-section" class="space-y-1.5 pb-3 border-b border-slate-700/70">
-                <div class="flex items-center justify-between">
-                    <h2 id="tab-info-title" class="text-base font-semibold text-sky-400">O que é a TMB (Basal)?</h2>
-                    <div class="tooltip tooltip-down relative cursor-help inline-block" tabindex="0">
-                        <div class="bg-slate-700 text-slate-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
-                            ?
-                        </div>
-                        <div class="tooltip-text" id="tab-info-tooltip">
-                            <strong class="text-sky-400">Sobre o App:</strong> App dedicado para facilitar o cálculo da Taxa Metabólica Basal e do Gasto Calórico Total.<br><br><strong class="text-sky-300">TMB (Taxa Metabólica Basal):</strong> É a quantidade mínima de energia (kcal) que seu corpo gasta em repouso absoluto apenas para manter funções vitais, como respiração, batimentos cardíacos e temperatura corporal.
-                        </div>
+        <!-- Card Central da Calculadora -->
+        <div id="app-card" class="w-full max-w-md shrink-0 bg-zinc-900 rounded-xl shadow-2xl border border-zinc-800 transition-colors duration-300 z-10">
+            
+            <!-- Cabeçalho -->
+            <div id="app-header" class="bg-zinc-950 pt-4 pb-6 px-6 text-center border-b border-zinc-800 rounded-t-xl transition-colors duration-300">
+                <!-- Barra Superior: Marca discreta na esquerda + Seletor de Tema na direita -->
+                <div class="flex items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <img id="brand-logo" src="image_9a755a.png" alt="Manhã de Morango S/A" class="w-8 h-8 rounded-full object-cover border border-sky-400/70 shadow-sm transition-all duration-300">
+                        <span id="brand-text" class="text-xs font-semibold tracking-wide text-zinc-300 transition-colors duration-300">Manhã de Morango S/A</span>
                     </div>
+
+                    <button id="theme-toggle-btn" type="button" onclick="toggleColorMode()" title="Alternar tema Claro / Escuro" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500 transition-all">
+                        <span id="theme-toggle-icon">🌙</span>
+                        <span id="theme-toggle-label">Escuro</span>
+                    </button>
                 </div>
-                <p class="text-xs text-slate-400">App dedicado para facilitar o cálculo da Taxa Metabólica Basal e Gasto Calórico Total.</p>
+
+                <!-- Imagem central Sino de Bronze -->
+                <div class="flex flex-col items-center">
+                    <img id="app-logo" src="sino_bronze.jpg" alt="Brass Bell Metrics Logo" class="w-36 h-36 md:w-40 md:h-40 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_20px_rgba(14,165,233,0.35)] transition-all duration-300">
+                </div>
+
+                <h1 id="app-title" class="text-2xl font-bold text-sky-400 transition-colors duration-300">Brass Bell Metrics</h1>
             </div>
 
-            <!-- Cabeçalho da Aba Pedras (st) + História -->
-            <div id="stones-header-section" class="hidden space-y-2 pb-3 border-b border-zinc-800">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-base font-semibold text-zinc-200">Quantas pedras (st) você pesa?</h2>
-                    <div class="tooltip tooltip-down relative cursor-help inline-block" tabindex="0">
-                        <div class="bg-zinc-700 text-zinc-200 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-zinc-500 hover:text-white transition-colors">
-                            ?
-                        </div>
-                        <div class="tooltip-text">
-                            <strong class="text-zinc-200">História do Stone (st):</strong> Usada desde a Antiguidade nas Ilhas Britânicas, quando comerciantes usavam pedras reais para pesar mercadorias nos mercados. Em 1350, o rei Eduardo III da Inglaterra padronizou 1 <em>stone</em> como exatamente <strong>14 libras</strong> (<strong>6,35029 kg</strong>). Até hoje é a unidade tradicional para peso corporal no Reino Unido e na Irlanda.
-                        </div>
-                    </div>
-                </div>
-                <p class="text-xs text-zinc-400">1 stone (st) = 6,35 kg (14 lb). Alterne entre <strong>kg</strong> e <strong>st</strong> abaixo para converter nos dois sentidos.</p>
+            <!-- Abas -->
+            <div id="tabs-container" class="flex border-b border-zinc-800 text-sm md:text-base transition-colors duration-300">
+                <button id="tab-tmb" class="flex-1 py-3 text-center font-medium tab-active-blue-dark transition-colors" onclick="switchTab('tmb')">
+                    TMB (Basal)
+                </button>
+                <button id="tab-tdee" class="flex-1 py-3 text-center font-medium tab-inactive-dark transition-colors" onclick="switchTab('tdee')">
+                    TDEE (Total)
+                </button>
+                <button id="tab-stones" class="flex-1 py-3 text-center font-medium tab-inactive-dark transition-colors" onclick="switchTab('stones')">
+                    Pedras (st)
+                </button>
             </div>
 
-            <!-- Método e Tooltip (Apenas TMB e TDEE) -->
-            <div id="method-section" class="space-y-2">
-                <div class="flex items-center justify-between">
-                    <label class="block text-sm font-medium text-slate-300">Método de Cálculo</label>
-                    <div class="tooltip relative cursor-help inline-block" tabindex="0">
-                        <div id="method-help-badge" class="bg-slate-700 text-slate-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
-                            ?
+            <div class="p-6 space-y-5">
+                <!-- Cabeçalho Explicativo das Abas TMB e TDEE -->
+                <div id="tab-info-section" class="space-y-1.5 pb-3 border-b border-zinc-800 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <h2 id="tab-info-title" class="text-base font-semibold text-sky-400">O que é a TMB (Basal)?</h2>
+                        <div class="tooltip tooltip-down relative cursor-help inline-block" tabindex="0">
+                            <div id="tab-info-badge" class="bg-zinc-800 text-zinc-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
+                                ?
+                            </div>
+                            <div class="tooltip-text" id="tab-info-tooltip">
+                                <strong class="text-sky-400">Sobre o App:</strong> App dedicado para facilitar o cálculo da Taxa Metabólica Basal e do Gasto Calórico Total.<br><br><strong class="text-sky-300">TMB (Taxa Metabólica Basal):</strong> É a quantidade mínima de energia (kcal) que seu corpo gasta em repouso absoluto apenas para manter funções vitais, como respiração, batimentos cardíacos e temperatura corporal.
+                            </div>
                         </div>
-                        <div class="tooltip-text" id="method-tooltip">
-                            <strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.
+                    </div>
+                    <p id="tab-info-subtitle" class="text-xs text-zinc-400">App dedicado para facilitar o cálculo da Taxa Metabólica Basal e Gasto Calórico Total.</p>
+                </div>
+
+                <!-- Cabeçalho da Aba Pedras (st) + História -->
+                <div id="stones-header-section" class="hidden space-y-2 pb-3 border-b border-zinc-800 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <h2 id="stones-header-title" class="text-base font-semibold text-zinc-200">Quantas pedras (st) você pesa?</h2>
+                        <div class="tooltip tooltip-down relative cursor-help inline-block" tabindex="0">
+                            <div id="stones-help-badge" class="bg-zinc-700 text-zinc-200 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-zinc-500 hover:text-white transition-colors">
+                                ?
+                            </div>
+                            <div class="tooltip-text">
+                                <strong class="text-zinc-200">História do Stone (st):</strong> Usada desde a Antiguidade nas Ilhas Britânicas, quando comerciantes usavam pedras reais para pesar mercadorias nos mercados. Em 1350, o rei Eduardo III da Inglaterra padronizou 1 <em>stone</em> como exatamente <strong>14 libras</strong> (<strong>6,35029 kg</strong>). Até hoje é a unidade tradicional para peso corporal no Reino Unido e na Irlanda.
+                            </div>
                         </div>
                     </div>
+                    <p id="stones-header-subtitle" class="text-xs text-zinc-400">1 stone (st) = 6,35 kg (14 lb). Alterne entre <strong>kg</strong> e <strong>st</strong> abaixo para converter nos dois sentidos.</p>
                 </div>
-                <select id="method" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-all" onchange="updateFormAndCalculate()">
-                    <option value="katch">Katch-McArdle (Preciso / Requer BF%)</option>
-                    <option value="mifflin">Mifflin-St Jeor (Padrão)</option>
-                </select>
-            </div>
 
-            <!-- Peso com seletor kg / stones (st) -->
-            <div>
-                <div class="flex items-center justify-between mb-1.5">
-                    <label id="weight-label" class="block text-sm font-medium text-slate-300">Peso (kg)</label>
-                    <div id="unit-toggle-group" class="inline-flex rounded-lg p-0.5 bg-slate-900 border border-slate-700 text-xs">
-                        <button type="button" id="unit-btn-kg" onclick="setWeightUnit('kg')" class="px-2.5 py-1 rounded-md font-semibold bg-sky-500 text-white transition-colors">
-                            kg
-                        </button>
-                        <button type="button" id="unit-btn-st" onclick="setWeightUnit('st')" class="px-2.5 py-1 rounded-md font-semibold text-slate-400 hover:text-slate-200 transition-colors">
-                            st (pedras)
-                        </button>
+                <!-- Método e Tooltip (Apenas TMB e TDEE) -->
+                <div id="method-section" class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label id="method-label" class="block text-sm font-medium text-zinc-300">Método de Cálculo</label>
+                        <div class="tooltip relative cursor-help inline-block" tabindex="0">
+                            <div id="method-help-badge" class="bg-zinc-800 text-zinc-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors">
+                                ?
+                            </div>
+                            <div class="tooltip-text" id="method-tooltip">
+                                <strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <input type="number" step="any" id="weight" placeholder="Ex: 75" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-colors" oninput="onWeightInput()">
-                <p id="weight-conversion-hint" class="text-xs text-slate-400 mt-1.5 hidden"></p>
-            </div>
-
-            <!-- Campos Mifflin (Altura, Idade, Gênero) -->
-            <div id="mifflin-fields" class="hidden space-y-5">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Altura (cm)</label>
-                        <input type="number" id="height" placeholder="Ex: 175" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="saveStateAndCalculate()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Idade</label>
-                        <input type="number" id="age" placeholder="Ex: 25" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="saveStateAndCalculate()">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-1">Gênero</label>
-                    <select id="gender" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="saveStateAndCalculate()">
-                        <option value="m">Masculino</option>
-                        <option value="f">Feminino</option>
+                    <select id="method" class="form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-sky-500 focus:border-sky-500 transition-all" onchange="updateFormAndCalculate()">
+                        <option value="katch">Katch-McArdle (Preciso / Requer BF%)</option>
+                        <option value="mifflin">Mifflin-St Jeor (Padrão)</option>
                     </select>
                 </div>
-            </div>
 
-            <!-- Campo Katch (BF%) -->
-            <div id="katch-fields" class="block">
-                <label class="block text-sm font-medium text-slate-300 mb-1">Percentual de Gordura (%)</label>
-                <input type="number" step="any" id="bf" placeholder="Ex: 15" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" oninput="saveStateAndCalculate()">
-            </div>
-
-            <!-- Nível de Atividade (Apenas TDEE) -->
-            <div id="activity-section" class="hidden">
-                <label class="block text-sm font-medium text-slate-300 mb-1">Nível de Atividade</label>
-                <select id="activity" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500" onchange="saveStateAndCalculate()">
-                    <option value="1.2">Sedentário (Trabalho de escritório)</option>
-                    <option value="1.375">Levemente Ativo (Exercício 1-3 dias/sem)</option>
-                    <option value="1.55" selected>Moderadamente Ativo (Exercício 3-5 dias/sem)</option>
-                    <option value="1.725">Muito Ativo (Exercício pesado 6-7 dias/sem)</option>
-                    <option value="1.9">Extremamente Ativo (Trabalho físico + Treino)</option>
-                </select>
-            </div>
-
-            <!-- Resultado Prominente -->
-            <div id="result-box" class="mt-8 p-6 bg-slate-900 rounded-xl border border-sky-900/50 shadow-inner text-center transition-colors duration-300">
-                <h2 id="result-label" class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Taxa Metabólica Basal</h2>
-                <div class="flex justify-center items-end space-x-2">
-                    <span id="main-result" class="text-5xl font-extrabold text-sky-400 transition-colors duration-300">0</span>
-                    <span id="result-unit" class="text-xl text-slate-500 pb-1">kcal</span>
+                <!-- Peso com seletor kg / stones (st) -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label id="weight-label" class="block text-sm font-medium text-zinc-300">Peso (kg)</label>
+                        <div id="unit-toggle-group" class="inline-flex rounded-lg p-0.5 bg-zinc-950 border border-zinc-700 text-xs transition-colors">
+                            <button type="button" id="unit-btn-kg" onclick="setWeightUnit('kg')" class="px-2.5 py-1 rounded-md font-semibold bg-sky-500 text-white transition-colors">
+                                kg
+                            </button>
+                            <button type="button" id="unit-btn-st" onclick="setWeightUnit('st')" class="px-2.5 py-1 rounded-md font-semibold text-zinc-400 hover:text-zinc-200 transition-colors">
+                                st (pedras)
+                            </button>
+                        </div>
+                    </div>
+                    <input type="number" step="any" id="weight" placeholder="Ex: 75" class="form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-sky-500 focus:border-sky-500 transition-colors" oninput="onWeightInput()">
+                    <p id="weight-conversion-hint" class="text-xs text-zinc-400 mt-1.5 hidden"></p>
                 </div>
-                <p id="result-desc" class="text-xs text-slate-500 mt-3">Energia necessária apenas para manter as funções vitais em repouso absoluto.</p>
+
+                <!-- Campos Mifflin (Altura, Idade, Gênero) -->
+                <div id="mifflin-fields" class="hidden space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label id="height-label" class="block text-sm font-medium text-zinc-300 mb-1">Altura (cm)</label>
+                            <input type="number" id="height" placeholder="Ex: 175" class="form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-sky-500 focus:border-sky-500 transition-colors" oninput="saveStateAndCalculate()">
+                        </div>
+                        <div>
+                            <label id="age-label" class="block text-sm font-medium text-zinc-300 mb-1">Idade</label>
+                            <input type="number" id="age" placeholder="Ex: 25" class="form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-sky-500 focus:border-sky-500 transition-colors" oninput="saveStateAndCalculate()">
+                        </div>
+                    </div>
+                    <div>
+                        <label id="gender-label" class="block text-sm font-medium text-zinc-300 mb-1">Gênero</label>
+                        <select id="gender" class="form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-sky-500 focus:border-sky-500 transition-colors" onchange="saveStateAndCalculate()">
+                            <option value="m">Masculino</option>
+                            <option value="f">Feminino</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Campo Katch (BF%) -->
+                <div id="katch-fields" class="block">
+                    <label id="bf-label" class="block text-sm font-medium text-zinc-300 mb-1">Percentual de Gordura (%)</label>
+                    <input type="number" step="any" id="bf" placeholder="Ex: 15" class="form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-sky-500 focus:border-sky-500 transition-colors" oninput="saveStateAndCalculate()">
+                </div>
+
+                <!-- Nível de Atividade (Apenas TDEE) -->
+                <div id="activity-section" class="hidden">
+                    <label id="activity-label" class="block text-sm font-medium text-zinc-300 mb-1">Nível de Atividade</label>
+                    <select id="activity" class="form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-sky-500 focus:border-sky-500 transition-colors" onchange="saveStateAndCalculate()">
+                        <option value="1.2">Sedentário (Trabalho de escritório)</option>
+                        <option value="1.375">Levemente Ativo (Exercício 1-3 dias/sem)</option>
+                        <option value="1.55" selected>Moderadamente Ativo (Exercício 3-5 dias/sem)</option>
+                        <option value="1.725">Muito Ativo (Exercício pesado 6-7 dias/sem)</option>
+                        <option value="1.9">Extremamente Ativo (Trabalho físico + Treino)</option>
+                    </select>
+                </div>
+
+                <!-- Resultado Prominente -->
+                <div id="result-box" class="mt-8 p-6 bg-zinc-950 rounded-xl border border-sky-900/50 shadow-inner text-center transition-colors duration-300">
+                    <h2 id="result-label" class="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-2">Taxa Metabólica Basal</h2>
+                    <div class="flex justify-center items-end space-x-2">
+                        <span id="main-result" class="text-5xl font-extrabold text-sky-400 transition-colors duration-300">0</span>
+                        <span id="result-unit" class="text-xl text-zinc-500 pb-1">kcal</span>
+                    </div>
+                    <p id="result-desc" class="text-xs text-zinc-500 mt-3">Energia necessária apenas para manter as funções vitais em repouso absoluto.</p>
+                </div>
             </div>
+        </div>
+
+        <!-- Lateral Direita (Desktop): Mílon Adulto carregando o touro -->
+        <div class="hidden lg:flex flex-col items-center justify-center flex-1 pointer-events-none select-none">
+            <img src="milon_right.png" alt="Mílon de Crotona carregando o touro" class="milon-figure w-64 xl:w-80 h-auto object-contain">
+        </div>
+
+        <!-- Versão Mobile/Tablet das figuras de Mílon (visível abaixo do card em telas menores) -->
+        <div class="flex lg:hidden items-end justify-between w-full max-w-md px-4 pt-2 pointer-events-none select-none">
+            <img src="milon_left.png" alt="Mílon de Crotona carregando o bezerro" class="milon-figure w-24 sm:w-28 h-auto object-contain">
+            <img src="milon_right.png" alt="Mílon de Crotona carregando o touro" class="milon-figure w-40 sm:w-48 h-auto object-contain">
         </div>
     </div>
 
@@ -235,7 +315,9 @@
 
         let currentTab = 'tmb';
         let weightUnit = 'kg'; // 'kg' ou 'st'
-        let storedWeightKg = null; // valor canônico em kg para manter precisão entre conversões
+        let storedWeightKg = null;
+        let colorMode = 'dark'; // 'dark' ou 'light'
+        let userOverrodeTheme = false;
 
         const tooltips = {
             katch: '<strong class="text-sky-400">Katch-McArdle:</strong> Ideal para quem treina força e sabe o percentual de gordura. Foca apenas na massa magra, não superestimando o gasto calórico baseado no peso bruto.',
@@ -253,6 +335,20 @@
             return String(rounded);
         }
 
+        function detectSystemColorMode() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                return 'light';
+            }
+            return 'dark';
+        }
+
+        function toggleColorMode() {
+            colorMode = colorMode === 'dark' ? 'light' : 'dark';
+            userOverrodeTheme = true;
+            saveToCache();
+            applyTheme();
+        }
+
         function saveToCache() {
             try {
                 const payload = {
@@ -263,7 +359,9 @@
                     height: document.getElementById('height').value,
                     age: document.getElementById('age').value,
                     gender: document.getElementById('gender').value,
-                    activity: document.getElementById('activity').value
+                    activity: document.getElementById('activity').value,
+                    colorMode: colorMode,
+                    userOverrodeTheme: userOverrodeTheme
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
             } catch (e) {
@@ -272,11 +370,16 @@
         }
 
         function loadFromCache() {
+            colorMode = detectSystemColorMode();
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
                 if (!raw) return;
                 const data = JSON.parse(raw);
 
+                if (data.userOverrodeTheme && (data.colorMode === 'dark' || data.colorMode === 'light')) {
+                    userOverrodeTheme = true;
+                    colorMode = data.colorMode;
+                }
                 if (data.method === 'katch' || data.method === 'mifflin') {
                     document.getElementById('method').value = data.method;
                 }
@@ -327,7 +430,8 @@
         }
 
         function updateWeightUnitUI() {
-            const isStoneTheme = currentTab === 'stones';
+            const isStone = currentTab === 'stones';
+            const isLight = colorMode === 'light';
             const weightLabel = document.getElementById('weight-label');
             const weightInput = document.getElementById('weight');
             const btnKg = document.getElementById('unit-btn-kg');
@@ -336,12 +440,22 @@
             weightLabel.textContent = weightUnit === 'kg' ? 'Peso (kg)' : 'Peso em Pedras (st)';
             weightInput.placeholder = weightUnit === 'kg' ? 'Ex: 75' : 'Ex: 11.8';
 
-            const activeClass = isStoneTheme
-                ? 'px-2.5 py-1 rounded-md font-semibold bg-zinc-600 text-zinc-100 transition-colors'
-                : 'px-2.5 py-1 rounded-md font-semibold bg-sky-500 text-white transition-colors';
-            const inactiveClass = isStoneTheme
-                ? 'px-2.5 py-1 rounded-md font-semibold text-zinc-400 hover:text-zinc-200 transition-colors'
-                : 'px-2.5 py-1 rounded-md font-semibold text-slate-400 hover:text-slate-200 transition-colors';
+            let activeClass, inactiveClass;
+            if (isStone) {
+                activeClass = isLight
+                    ? 'px-2.5 py-1 rounded-md font-semibold bg-zinc-800 text-white transition-colors'
+                    : 'px-2.5 py-1 rounded-md font-semibold bg-zinc-600 text-zinc-100 transition-colors';
+                inactiveClass = isLight
+                    ? 'px-2.5 py-1 rounded-md font-semibold text-zinc-500 hover:text-zinc-900 transition-colors'
+                    : 'px-2.5 py-1 rounded-md font-semibold text-zinc-400 hover:text-zinc-200 transition-colors';
+            } else {
+                activeClass = isLight
+                    ? 'px-2.5 py-1 rounded-md font-semibold bg-sky-600 text-white transition-colors'
+                    : 'px-2.5 py-1 rounded-md font-semibold bg-sky-500 text-white transition-colors';
+                inactiveClass = isLight
+                    ? 'px-2.5 py-1 rounded-md font-semibold text-zinc-500 hover:text-zinc-900 transition-colors'
+                    : 'px-2.5 py-1 rounded-md font-semibold text-zinc-400 hover:text-zinc-200 transition-colors';
+            }
 
             btnKg.className = weightUnit === 'kg' ? activeClass : inactiveClass;
             btnSt.className = weightUnit === 'st' ? activeClass : inactiveClass;
@@ -363,18 +477,32 @@
             calculate();
         }
 
-        function applyTheme(isStone) {
+        function applyTheme() {
+            const isStone = currentTab === 'stones';
+            const isLight = colorMode === 'light';
+
             const body = document.getElementById('app-body');
             const card = document.getElementById('app-card');
             const header = document.getElementById('app-header');
             const logo = document.getElementById('app-logo');
             const brandLogo = document.getElementById('brand-logo');
             const brandText = document.getElementById('brand-text');
+            const themeBtn = document.getElementById('theme-toggle-btn');
+            const themeIcon = document.getElementById('theme-toggle-icon');
+            const themeLabel = document.getElementById('theme-toggle-label');
             const title = document.getElementById('app-title');
             const tabsContainer = document.getElementById('tabs-container');
+            const tabInfoSection = document.getElementById('tab-info-section');
+            const tabInfoTitle = document.getElementById('tab-info-title');
+            const tabInfoSubtitle = document.getElementById('tab-info-subtitle');
+            const tabInfoBadge = document.getElementById('tab-info-badge');
+            const stonesHeaderSection = document.getElementById('stones-header-section');
+            const stonesHeaderTitle = document.getElementById('stones-header-title');
+            const stonesHeaderSubtitle = document.getElementById('stones-header-subtitle');
+            const stonesHelpBadge = document.getElementById('stones-help-badge');
+            const methodHelpBadge = document.getElementById('method-help-badge');
             const unitToggleGroup = document.getElementById('unit-toggle-group');
-            const weightInput = document.getElementById('weight');
-            const weightLabel = document.getElementById('weight-label');
+            const hintEl = document.getElementById('weight-conversion-hint');
             const resultBox = document.getElementById('result-box');
             const mainResult = document.getElementById('main-result');
             const resultLabel = document.getElementById('result-label');
@@ -382,45 +510,139 @@
             const resultDesc = document.getElementById('result-desc');
             const metaTheme = document.getElementById('meta-theme-color');
 
-            if (isStone) {
-                body.classList.add('theme-stone');
-                body.className = 'theme-stone bg-zinc-950 text-zinc-200 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300';
-                card.className = 'max-w-md mx-auto bg-zinc-900 rounded-xl shadow-2xl border border-zinc-700 transition-colors duration-300';
-                header.className = 'bg-zinc-950 pt-4 pb-6 px-6 text-center border-b border-zinc-800 rounded-t-xl transition-colors duration-300';
-                logo.className = 'w-36 h-36 md:w-40 md:h-40 mx-auto rounded-full object-cover border-2 border-zinc-400 mb-4 shadow-[0_0_20px_rgba(161,161,170,0.25)] grayscale transition-all duration-300';
-                brandLogo.className = 'w-8 h-8 rounded-full object-cover border border-zinc-500 shadow-sm grayscale transition-all duration-300';
-                brandText.className = 'text-xs font-semibold tracking-wide text-zinc-400 transition-colors duration-300';
-                title.className = 'text-2xl font-bold text-zinc-200 transition-colors duration-300';
-                tabsContainer.className = 'flex border-b border-zinc-800 text-sm md:text-base transition-colors duration-300';
-                unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-zinc-950 border border-zinc-700 text-xs';
-                weightInput.className = 'w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-zinc-400 focus:border-zinc-400 transition-colors';
-                weightLabel.className = 'block text-sm font-medium text-zinc-300';
-                resultBox.className = 'mt-8 p-6 bg-zinc-950 rounded-xl border border-zinc-700 shadow-inner text-center transition-colors duration-300';
-                mainResult.className = 'text-5xl font-extrabold text-zinc-200 transition-colors duration-300';
-                resultLabel.className = 'text-sm font-bold text-zinc-400 uppercase tracking-wider mb-2';
-                resultUnit.className = 'text-xl text-zinc-400 pb-1';
-                resultDesc.className = 'text-xs text-zinc-400 mt-3';
-                metaTheme.setAttribute('content', '#09090b');
+            // Labels dos campos
+            const labelIds = ['method-label', 'weight-label', 'height-label', 'age-label', 'gender-label', 'bf-label', 'activity-label'];
+            const inputs = document.querySelectorAll('.form-input');
+
+            // Atualiza ícone e texto do botão de tema
+            themeIcon.textContent = isLight ? '☀️' : '🌙';
+            themeLabel.textContent = isLight ? 'Claro' : 'Escuro';
+
+            // Classes do Body
+            body.className = `${isLight ? 'mode-light text-zinc-900' : 'mode-dark text-zinc-100'} ${isStone ? 'theme-stone' : ''} min-h-screen p-4 md:p-8 font-sans transition-colors duration-300 flex flex-col justify-center`;
+
+            if (isLight) {
+                // MODO CLARO (BRANCO COM PONTILHADO NO FUNDO)
+                metaTheme.setAttribute('content', isStone ? '#f4f4f5' : '#ffffff');
+                themeBtn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 shadow-sm transition-all';
+
+                if (isStone) {
+                    card.className = 'w-full max-w-md shrink-0 bg-zinc-100 rounded-xl shadow-2xl border border-zinc-300 transition-colors duration-300 z-10';
+                    header.className = 'bg-zinc-200/80 pt-4 pb-6 px-6 text-center border-b border-zinc-300 rounded-t-xl transition-colors duration-300';
+                    logo.className = 'w-36 h-36 md:w-40 md:h-40 mx-auto rounded-full object-cover border-2 border-zinc-500 mb-4 shadow-md grayscale transition-all duration-300';
+                    brandLogo.className = 'w-8 h-8 rounded-full object-cover border border-zinc-500 shadow-sm grayscale transition-all duration-300';
+                    brandText.className = 'text-xs font-semibold tracking-wide text-zinc-700 transition-colors duration-300';
+                    title.className = 'text-2xl font-bold text-zinc-800 transition-colors duration-300';
+                    tabsContainer.className = 'flex border-b border-zinc-300 text-sm md:text-base transition-colors duration-300';
+                    stonesHeaderSection.className = 'space-y-2 pb-3 border-b border-zinc-300 transition-colors';
+                    stonesHeaderTitle.className = 'text-base font-semibold text-zinc-800';
+                    stonesHeaderSubtitle.className = 'text-xs text-zinc-600';
+                    stonesHelpBadge.className = 'bg-zinc-300 text-zinc-800 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-zinc-700 hover:text-white transition-colors';
+                    unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-zinc-200 border border-zinc-300 text-xs transition-colors';
+                    resultBox.className = 'mt-8 p-6 bg-white rounded-xl border border-zinc-300 shadow-inner text-center transition-colors duration-300';
+                    mainResult.className = 'text-5xl font-extrabold text-zinc-800 transition-colors duration-300';
+                    resultLabel.className = 'text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2';
+                    resultUnit.className = 'text-xl text-zinc-500 pb-1';
+                    resultDesc.className = 'text-xs text-zinc-500 mt-3';
+                } else {
+                    card.className = 'w-full max-w-md shrink-0 bg-white rounded-xl shadow-2xl border border-zinc-200 transition-colors duration-300 z-10';
+                    header.className = 'bg-zinc-50 pt-4 pb-6 px-6 text-center border-b border-zinc-200 rounded-t-xl transition-colors duration-300';
+                    logo.className = 'w-36 h-36 md:w-40 md:h-40 mx-auto rounded-full object-cover border-2 border-sky-600 mb-4 shadow-[0_0_20px_rgba(2,132,199,0.2)] transition-all duration-300';
+                    brandLogo.className = 'w-8 h-8 rounded-full object-cover border border-sky-600/70 shadow-sm transition-all duration-300';
+                    brandText.className = 'text-xs font-semibold tracking-wide text-zinc-700 transition-colors duration-300';
+                    title.className = 'text-2xl font-bold text-sky-600 transition-colors duration-300';
+                    tabsContainer.className = 'flex border-b border-zinc-200 text-sm md:text-base transition-colors duration-300';
+                    tabInfoSection.className = 'space-y-1.5 pb-3 border-b border-zinc-200 transition-colors';
+                    tabInfoTitle.className = 'text-base font-semibold text-sky-700';
+                    tabInfoSubtitle.className = 'text-xs text-zinc-500';
+                    tabInfoBadge.className = 'bg-zinc-200 text-zinc-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-600 hover:text-white transition-colors';
+                    methodHelpBadge.className = 'bg-zinc-200 text-zinc-700 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-600 hover:text-white transition-colors';
+                    unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-zinc-100 border border-zinc-300 text-xs transition-colors';
+                    resultBox.className = 'mt-8 p-6 bg-zinc-50 rounded-xl border border-sky-200 shadow-inner text-center transition-colors duration-300';
+                    mainResult.className = 'text-5xl font-extrabold text-sky-600 transition-colors duration-300';
+                    resultLabel.className = 'text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2';
+                    resultUnit.className = 'text-xl text-zinc-500 pb-1';
+                    resultDesc.className = 'text-xs text-zinc-500 mt-3';
+                }
+
+                hintEl.className = `text-xs text-zinc-500 mt-1.5 ${hintEl.classList.contains('hidden') ? 'hidden' : ''}`;
+                labelIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.className = el.id === 'weight-label' || el.id === 'method-label'
+                        ? 'block text-sm font-medium text-zinc-700'
+                        : 'block text-sm font-medium text-zinc-700 mb-1';
+                });
+                inputs.forEach(inp => {
+                    inp.className = isStone
+                        ? 'form-input w-full bg-white border border-zinc-300 rounded-lg p-2.5 text-zinc-900 focus:ring-zinc-600 focus:border-zinc-600 transition-colors'
+                        : 'form-input w-full bg-zinc-50 border border-zinc-300 rounded-lg p-2.5 text-zinc-900 focus:ring-sky-600 focus:border-sky-600 transition-colors';
+                });
             } else {
-                body.classList.remove('theme-stone');
-                body.className = 'bg-slate-900 text-slate-200 min-h-screen p-4 md:p-8 font-sans transition-colors duration-300';
-                card.className = 'max-w-md mx-auto bg-slate-800 rounded-xl shadow-2xl border border-slate-700 transition-colors duration-300';
-                header.className = 'bg-slate-900 pt-4 pb-6 px-6 text-center border-b border-slate-700 rounded-t-xl transition-colors duration-300';
-                logo.className = 'w-36 h-36 md:w-40 md:h-40 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_20px_rgba(14,165,233,0.35)] transition-all duration-300';
-                brandLogo.className = 'w-8 h-8 rounded-full object-cover border border-sky-400/70 shadow-sm transition-all duration-300';
-                brandText.className = 'text-xs font-semibold tracking-wide text-slate-300 transition-colors duration-300';
-                title.className = 'text-2xl font-bold text-sky-400 transition-colors duration-300';
-                tabsContainer.className = 'flex border-b border-slate-700 text-sm md:text-base transition-colors duration-300';
-                unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-slate-900 border border-slate-700 text-xs';
-                weightInput.className = 'w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-200 focus:ring-sky-500 focus:border-sky-500 transition-colors';
-                weightLabel.className = 'block text-sm font-medium text-slate-300';
-                resultBox.className = 'mt-8 p-6 bg-slate-900 rounded-xl border border-sky-900/50 shadow-inner text-center transition-colors duration-300';
-                mainResult.className = 'text-5xl font-extrabold text-sky-400 transition-colors duration-300';
-                resultLabel.className = 'text-sm font-bold text-slate-400 uppercase tracking-wider mb-2';
-                resultUnit.className = 'text-xl text-slate-500 pb-1';
-                resultDesc.className = 'text-xs text-slate-500 mt-3';
-                metaTheme.setAttribute('content', '#0f172a');
+                // MODO ESCURO (PRETO COM SILHUETA ESBRANQUIÇADA)
+                metaTheme.setAttribute('content', '#09090b');
+                themeBtn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-500 transition-all';
+
+                if (isStone) {
+                    card.className = 'w-full max-w-md shrink-0 bg-zinc-900 rounded-xl shadow-2xl border border-zinc-700 transition-colors duration-300 z-10';
+                    header.className = 'bg-zinc-950 pt-4 pb-6 px-6 text-center border-b border-zinc-800 rounded-t-xl transition-colors duration-300';
+                    logo.className = 'w-36 h-36 md:w-40 md:h-40 mx-auto rounded-full object-cover border-2 border-zinc-400 mb-4 shadow-[0_0_20px_rgba(161,161,170,0.25)] grayscale transition-all duration-300';
+                    brandLogo.className = 'w-8 h-8 rounded-full object-cover border border-zinc-500 shadow-sm grayscale transition-all duration-300';
+                    brandText.className = 'text-xs font-semibold tracking-wide text-zinc-400 transition-colors duration-300';
+                    title.className = 'text-2xl font-bold text-zinc-200 transition-colors duration-300';
+                    tabsContainer.className = 'flex border-b border-zinc-800 text-sm md:text-base transition-colors duration-300';
+                    stonesHeaderSection.className = 'space-y-2 pb-3 border-b border-zinc-800 transition-colors';
+                    stonesHeaderTitle.className = 'text-base font-semibold text-zinc-200';
+                    stonesHeaderSubtitle.className = 'text-xs text-zinc-400';
+                    stonesHelpBadge.className = 'bg-zinc-700 text-zinc-200 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-zinc-500 hover:text-white transition-colors';
+                    unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-zinc-950 border border-zinc-700 text-xs transition-colors';
+                    resultBox.className = 'mt-8 p-6 bg-zinc-950 rounded-xl border border-zinc-700 shadow-inner text-center transition-colors duration-300';
+                    mainResult.className = 'text-5xl font-extrabold text-zinc-200 transition-colors duration-300';
+                    resultLabel.className = 'text-sm font-bold text-zinc-400 uppercase tracking-wider mb-2';
+                    resultUnit.className = 'text-xl text-zinc-400 pb-1';
+                    resultDesc.className = 'text-xs text-zinc-400 mt-3';
+                } else {
+                    card.className = 'w-full max-w-md shrink-0 bg-zinc-900 rounded-xl shadow-2xl border border-zinc-800 transition-colors duration-300 z-10';
+                    header.className = 'bg-zinc-950 pt-4 pb-6 px-6 text-center border-b border-zinc-800 rounded-t-xl transition-colors duration-300';
+                    logo.className = 'w-36 h-36 md:w-40 md:h-40 mx-auto rounded-full object-cover border-2 border-sky-500 mb-4 shadow-[0_0_20px_rgba(14,165,233,0.35)] transition-all duration-300';
+                    brandLogo.className = 'w-8 h-8 rounded-full object-cover border border-sky-400/70 shadow-sm transition-all duration-300';
+                    brandText.className = 'text-xs font-semibold tracking-wide text-zinc-300 transition-colors duration-300';
+                    title.className = 'text-2xl font-bold text-sky-400 transition-colors duration-300';
+                    tabsContainer.className = 'flex border-b border-zinc-800 text-sm md:text-base transition-colors duration-300';
+                    tabInfoSection.className = 'space-y-1.5 pb-3 border-b border-zinc-800 transition-colors';
+                    tabInfoTitle.className = 'text-base font-semibold text-sky-400';
+                    tabInfoSubtitle.className = 'text-xs text-zinc-400';
+                    tabInfoBadge.className = 'bg-zinc-800 text-zinc-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors';
+                    methodHelpBadge.className = 'bg-zinc-800 text-zinc-300 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-sky-500 hover:text-white transition-colors';
+                    unitToggleGroup.className = 'inline-flex rounded-lg p-0.5 bg-zinc-950 border border-zinc-700 text-xs transition-colors';
+                    resultBox.className = 'mt-8 p-6 bg-zinc-950 rounded-xl border border-sky-900/50 shadow-inner text-center transition-colors duration-300';
+                    mainResult.className = 'text-5xl font-extrabold text-sky-400 transition-colors duration-300';
+                    resultLabel.className = 'text-sm font-bold text-zinc-400 uppercase tracking-wider mb-2';
+                    resultUnit.className = 'text-xl text-zinc-500 pb-1';
+                    resultDesc.className = 'text-xs text-zinc-500 mt-3';
+                }
+
+                hintEl.className = `text-xs text-zinc-400 mt-1.5 ${hintEl.classList.contains('hidden') ? 'hidden' : ''}`;
+                labelIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.className = el.id === 'weight-label' || el.id === 'method-label'
+                        ? 'block text-sm font-medium text-zinc-300'
+                        : 'block text-sm font-medium text-zinc-300 mb-1';
+                });
+                inputs.forEach(inp => {
+                    inp.className = isStone
+                        ? 'form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-zinc-400 focus:border-zinc-400 transition-colors'
+                        : 'form-input w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-zinc-100 focus:ring-sky-500 focus:border-sky-500 transition-colors';
+                });
             }
+
+            // Estilo das Abas (Claro vs Escuro + Azul vs Pedra)
+            const activeBlue = isLight ? 'tab-active-blue-light' : 'tab-active-blue-dark';
+            const activeStone = isLight ? 'tab-active-stone-light' : 'tab-active-stone-dark';
+            const inactiveTab = isLight ? 'tab-inactive-light' : 'tab-inactive-dark';
+
+            document.getElementById('tab-tmb').className = `flex-1 py-3 text-center font-medium transition-colors ${currentTab === 'tmb' ? activeBlue : inactiveTab}`;
+            document.getElementById('tab-tdee').className = `flex-1 py-3 text-center font-medium transition-colors ${currentTab === 'tdee' ? activeBlue : inactiveTab}`;
+            document.getElementById('tab-stones').className = `flex-1 py-3 text-center font-medium transition-colors ${currentTab === 'stones' ? activeStone : inactiveTab}`;
 
             updateWeightUnitUI();
         }
@@ -429,20 +651,8 @@
             currentTab = tab;
             const isStone = tab === 'stones';
 
-            applyTheme(isStone);
+            applyTheme();
 
-            // Estilo das Abas
-            document.getElementById('tab-tmb').className = tab === 'tmb'
-                ? 'flex-1 py-3 text-center font-medium tab-active-blue transition-colors'
-                : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
-            document.getElementById('tab-tdee').className = tab === 'tdee'
-                ? 'flex-1 py-3 text-center font-medium tab-active-blue transition-colors'
-                : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
-            document.getElementById('tab-stones').className = tab === 'stones'
-                ? 'flex-1 py-3 text-center font-medium tab-active-stone transition-colors'
-                : 'flex-1 py-3 text-center font-medium tab-inactive transition-colors';
-
-            // Mostrar / esconder seções conforme a aba
             const tabInfoSection = document.getElementById('tab-info-section');
             const tabInfoTitle = document.getElementById('tab-info-title');
             const tabInfoTooltip = document.getElementById('tab-info-tooltip');
@@ -526,7 +736,6 @@
                 const resultDesc = document.getElementById('result-desc');
 
                 if (weightUnit === 'kg') {
-                    // Entrada em kg -> resultado principal em stones (st)
                     const stonesVal = weightKg > 0 ? weightKg / KG_PER_STONE : 0;
                     const totalPounds = Math.round(stonesVal * 14);
                     const wholeStones = Math.floor(totalPounds / 14);
@@ -540,7 +749,6 @@
 
                     animateValue('main-result', parseFloat(document.getElementById('main-result').innerText) || 0, stonesVal, 300, 2);
                 } else {
-                    // Entrada em st -> resultado principal em kg
                     const stonesInputVal = weightKg > 0 ? weightKg / KG_PER_STONE : 0;
                     resultLabel.textContent = 'Seu Peso em Quilogramas';
                     resultUnit.textContent = 'kg';
@@ -623,9 +831,19 @@
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             loadFromCache();
+            applyTheme();
             updateMethodFieldsVisibility();
-            updateWeightUnitUI();
             calculate();
+
+            // Escuta mudanças no tema do sistema caso o usuário não tenha fixado manualmente
+            if (window.matchMedia) {
+                window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+                    if (!userOverrodeTheme) {
+                        colorMode = e.matches ? 'light' : 'dark';
+                        applyTheme();
+                    }
+                });
+            }
         });
     </script>
 </body>
